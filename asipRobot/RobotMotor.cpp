@@ -32,11 +32,9 @@ void RobotMotor::begin(int direction, byte pins[], Encoder *encoder)
 void RobotMotor::begin(int direction)
 {
  debug_printf("motor using pins %d,%d,%d\n", pins[0], pins[1], pins[2]) ;  
-#if defined (UNO_WIFI_REV2_328MODE) 
-  setHbridgeType(_DRV8833); // drv8833 uses pwm so no need to set pinmode
-#else
-  pinMode(pins[in1Pin], OUTPUT);
-  pinMode(pins[in2Pin], OUTPUT);
+ // NOTE teensy can use non DRV8833  so H-Bridge type must be set explicitly  
+#if defined (UNO_WIFI_REV2_328MODE) || defined (TARGET_RP2040) || defined(TARGET_RASPBERRY_PI_PICO) || defined(ARDUINO_ARCH_ESP32)
+  setHbridgeType(_DRV8833); // drv8833 uses pwm so no need to set pinmode  
 #endif  
   //pinMode(standbyPin, OUTPUT);
   
@@ -50,6 +48,11 @@ void RobotMotor::begin(int direction)
 void RobotMotor::setHbridgeType(int type)
 {
   hBridgeType = type;
+  if(type!= _DRV8833){
+    // DRV8833 uses analogWrite so no need for pinMode
+    pinMode(pins[in1Pin], OUTPUT);
+    pinMode(pins[in2Pin], OUTPUT);
+  }    
   //Serial.printf("motor using pins %d,%d,%d set to H-bridge type %d\n", pins[0], pins[1], pins[2], type) ; 
 }
 
@@ -128,11 +131,13 @@ void RobotMotor::setMotorPwm(int requestedPwm)
           analogWrite(pins[in2Pin], modeVal);
           //pins[PWMPin] = pins[in1Pin];
           pwmPin = pins[in1Pin];
+          //Serial.printf("In %s setPwm, writing %d to pin %d, PWM pin is %d\n", label, modeVal, pins[in2Pin], pwmPin);
       }
       else{
           analogWrite(pins[in1Pin], modeVal);
           //pins[PWMPin] = pins[in2Pin]; 
           pwmPin = pins[in2Pin];
+          //Serial.printf("In %s setPwm , writing %d to pin %d, PWM pin is %d\n", label, modeVal, pins[in1Pin], pwmPin);
       }
   }
   else{
@@ -161,11 +166,11 @@ boolean RobotMotor::isRampingPwm() // returns true if motor coming up to speed
   if( currentPwm >= targetPwm){
     if(hBridgeType == _DRV8833 && motorBrakeMode == false){ // false is DRV8833 coast mode, so invert the PWM
         analogWrite(pwmPin, 255-targetPwm);
-        //debug_printf("in isRampingPwm (inverted), %s writing %d but returns false: currentPwm (%d) is >=  targetPwm (%d)\n", label, 255-targetPwm,  currentPwm, targetPwm);
+        //debug_printf("in isRampingPwm (inverted), %s writing %d to pin %d but returns false: currentPwm (%d) is >=  targetPwm (%d)\n", label, 255-targetPwm, pwmPin,  currentPwm, targetPwm);
     }
     else{
       analogWrite(pwmPin, targetPwm);
-      //debug_printf("in isRampingPwm, %s writing %d but returning false because currentPwm (%d) is >=  targetPwm (%d)\n", label, targetPwm,  currentPwm, targetPwm);
+      //debug_printf("in isRampingPwm, %s writing %d to pin %d, but returning false because currentPwm (%d) is >=  targetPwm (%d)\n", label, targetPwm, pwmPin, currentPwm, targetPwm);
    }
     return false;  // motor is getting requested pwm level
   }

@@ -16,16 +16,18 @@
 #include "asip.h"
 #include "RobotMotor.h"  // for H-bridge enums
 
-
+#ifdef MOVED_TO_SKETCH  // include the appropriate one in the sketch file
 #if defined (UNO_WIFI_REV2_328MODE)
   #include "UnoWifiRobot_pins.h"  
 #elif defined(__MK20DX256__) // Teensy 3.x
   #include "mirto2020Pins.h"
   // #include "TeensyRobot_pins.h"  //uncomment this for 2016 and 2018 boards
+#elif defined(TARGET_RP2040) || defined(TARGET_RASPBERRY_PI_PICO) 
+  #include "PiPico2040Robot_pins.h"
 #else
-  #error "this code requires a teensy or Arduino Uno Wifi Rev2"
+  #error "this code requires a teensy, Arduino Uno Wifi Rev2 or pico2040"
 #endif
-
+#endif
 
 // Service and method defines
 // Service IDs must be unique across all services
@@ -138,7 +140,8 @@ public:
 
 #if defined (UNO_WIFI_REV2_328MODE)
 // Accelerometer service
-#include "IMU_UnoR2.h"
+////#include "IMU_UnoR2.h"
+#warning ("todo fix import of IMU_UnoR2.h"); 
 #include "SPI.h"
 
 static PROGMEM const prog_char accelName[]    =  "Accelerometer";
@@ -157,6 +160,7 @@ class AccelerometerClass : public asipServiceClass
 public:
 
    AccelerometerClass(const char svcId);  
+   void begin(byte nbrElements);
    void begin(byte nbrElements,serviceBeginCallback_t serviceBeginCallback);   // classes that use I2C instead of specific pins use this begin method
    void reportValue(int sequenceId, Stream * stream) ; // send the value of the given device
    void reportValues(Stream *stream); // send all values separated by commas, preceded by header and terminated with newline

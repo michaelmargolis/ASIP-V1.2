@@ -5,8 +5,6 @@
 
 #include "config.h" 
 #include "utility/asip_debug.h" // this file is in the ASIP library folder
-#include <EEPROM.h>
-
 
 
 //#define CONFIG_DEBUG
@@ -19,6 +17,20 @@ void setConfigDefaults( )
   configData.Ki = 0;
   configData.Ko = 20;  
 }
+
+#if defined(TARGET_RP2040) || defined(TARGET_RASPBERRY_PI_PICO)
+// here if board does not have eeprom
+
+void saveConfig(){} // do nothing
+
+bool restoreConfig(){
+    setConfigDefaults();
+    debug_printf("Using default config !!!\n");   
+    return true;
+}
+
+#else
+#include <EEPROM.h>
  
 // write header and save core data
 void saveConfig()
@@ -96,6 +108,8 @@ bool restoreConfig()
    }        
    return ret;
 }
+
+#endif
 
 /*
  *---------------- end config ---------------

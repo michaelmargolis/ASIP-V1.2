@@ -9,7 +9,7 @@
 #include "Arduino.h"
 #include "MotorPid.h"
 
-#include <Encoder.h>
+#include <RobotEncoder.h>
 
 enum motorPinIndex {in1Pin,in2Pin,PWMPin,EncApin,EncBpin};
 

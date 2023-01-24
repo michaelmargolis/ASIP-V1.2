@@ -43,6 +43,8 @@
 #include <asipLCD.h>          // LCD
 #include <services/asipDistance.h> // ultrasonics distance sensor
 
+#include "UnoWifiRobot_pins.h"  // hardware pin defines
+
 #ifdef ASIP_DEBUG
 //#error "ASIP_DEBUG must be disabled when using this board, (it's in debug.h in asip lib folder)
 #endif

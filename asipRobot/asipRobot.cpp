@@ -164,7 +164,7 @@ void robotMotorClass::setMotorPower(byte motor, int power)
 {
    if(motor < NBR_WHEELS){       
        wheel[motor].setMotorPower(power);
-     //  debug_printf("Motor %d set to %d\n", motor, power);
+       debug_printf("Motor %d set to %d\n", motor, power);
    }
 }
 
@@ -364,18 +364,24 @@ irLineSensorClass::irLineSensorClass(const char svcId) : asipServiceClass(svcId)
 void irLineSensorClass::begin(byte nbrElements, byte pinCount, const pinArray_t pins[]) 
 {
   asipServiceClass::begin(nbrElements,pinCount,pins);
-  pinMode(pins[0], OUTPUT);
-  digitalWrite(pins[0], OFF_STATE);
+  if(pins[0] < 255){ 
+    pinMode(pins[0], OUTPUT);
+    digitalWrite(pins[0], OFF_STATE);
+  }
 }
 
 void irLineSensorClass::reportValues(Stream *stream) 
 {
-   // turn on IR emitters
-   digitalWrite(pins[0], ON_STATE);
-   delayMicroseconds(200); // reduced delay time 1 July 2014
+   if(pins[0] < 255){ 
+     // turn on IR emitters
+     digitalWrite(pins[0], ON_STATE);
+     delayMicroseconds(200); // reduced delay time 1 July 2014
+   }
    asipServiceClass::reportValues(stream);
     // turn off IR emitters
-   digitalWrite(pins[0], OFF_STATE);
+   if(pins[0] < 255){  
+     digitalWrite(pins[0], OFF_STATE);
+   }
 }
 
 void irLineSensorClass::reset()
@@ -387,7 +393,10 @@ void irLineSensorClass::reportValue(int sequenceId, Stream * stream)  // send th
 {
    if( sequenceId < nbrElements) {
       int pin = pins[sequenceId+1]; // the first pin is the control pin
-      pin = PIN_TO_ANALOG(pin); // convert digital number to analog
+      #if defined(TARGET_RP2040) || defined(TARGET_RASPBERRY_PI_PICO)
+      #else
+        pin = PIN_TO_ANALOG(pin); // convert digital number to analog
+      #endif
       int value = analogRead(pin) -24;  // ensure max value <= 1000
       if(value < 0)
           value = 0;
@@ -406,16 +415,25 @@ void irLineSensorClass::processRequestMsg(Stream *stream)
    }
 }
 
-#if defined (UNO_WIFI_REV2_328MODE)
-// Accelerometer service
+#ifdef TODO_FIXME_IMU
+//#if defined (UNO_WIFI_REV2_328MODE)
+// Accelerometer service using Arduino_LSM6DS3 library
+#include <Arduino_LSM6DS3.h>
 LSM6DS3 mirtoIMU(SPI_MODE, SPIIMU_SS);  // SPI Chip Select
 
 AccelerometerClass::AccelerometerClass(const char svcId) : asipServiceClass(svcId){ svcName = accelName;}
 
-void AccelerometerClass::begin(byte nbrElements, serviceBeginCallback_t serviceBeginCallback) 
+void AccelerometerClass::begin(byte nbrElements) 
 {
    nbrElements = constrain(nbrElements, 0, NBR_ACCEL_AXIS);
    asipServiceClass::begin(nbrElements,serviceBeginCallback); 
+   mirtoIMU.begin();
+}
+
+void AccelerometerClass::begin(byte nbrElements, serviceBeginCallback_t serviceBeginCallback) 
+{
+   nbrElements = constrain(nbrElements, 0, NBR_ACCEL_AXIS);
+   asipServiceClass::begin(nbrElements); 
    mirtoIMU.begin();
 }
 
