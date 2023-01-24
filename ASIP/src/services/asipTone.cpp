@@ -22,7 +22,6 @@ void asipToneClass::begin(int pin)
 {
   speakerPin = pin;
   asipServiceClass::begin(pin); // reserve the pin  
-  tone(speakerPin, 440, 250);
 }
 
 void asipToneClass::reset()
