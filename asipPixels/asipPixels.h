@@ -45,21 +45,32 @@ const char tag_CLEAR_ALL_PIXELS       = 'C';
 // friendly defines for default strip configuration
 #define defaultStripType (NEO_RGB + NEO_KHZ800)
 
+
+// Callback prototype for color setter
+typedef void (*setColorCallback_t)(uint8_t R, uint8_t G, uint8_t B);
+   
+    
 class asipPixelsClass : public asipServiceClass
 {  
 public:
    asipPixelsClass(const char svcId, const char evtId);
    void begin(byte pin, Adafruit_NeoPixel* strip);
    void begin(byte nbrElements, const pinArray_t pins[], Adafruit_NeoPixel* strips);
+   void begin(setColorCallback_t callback);
+   void begin(byte pin, Adafruit_NeoPixel* strip, setColorCallback_t callback);
    void reset();
    void reportValues(Stream * stream);
    void reportValue(int sequenceId, Stream * stream) ; // not used in this service  
    void processRequestMsg(Stream *stream);  
    void setPixelColor(int pixel, uint32_t color);                 // enable calling from sketch
    void setPixelColor(int pixel, uint8_t r, uint8_t g, uint8_t b); // enable calling from sketch
+   void setBrightness(int brightness);
+   void clear();
 private:   
    Adafruit_NeoPixel* stripPtr;
-   uint32_t parseRGB(Stream *stream);
+   int stripIndex;  // strip number of using multiple strips
+   int nbrStrips;
+   setColorCallback_t setColorCallback;
 
 };   
 
