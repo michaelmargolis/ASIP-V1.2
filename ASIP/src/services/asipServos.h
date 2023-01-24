@@ -15,7 +15,11 @@
 #if defined (UNO_WIFI_REV2_328MODE)
     #warning("servos not yet supported on Uno Wifi Rev 2 board")
 #else
+  #if defined (ARDUINO_ARCH_ESP32)
+    #include <ESP32Servo.h>
+  #else  
     #include <Servo.h> 
+  #endif
     #include "asip.h"    
 #endif
 
