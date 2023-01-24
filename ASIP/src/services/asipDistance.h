@@ -15,6 +15,7 @@
 #define asipDistance_h
 
 #include "asip.h"
+#include <Wire.h>
 
 // Service and method defines
 // Service IDs must be unique across all services
@@ -37,6 +38,7 @@ public:
    asipDistanceClass(const char svcId);  
    void begin(byte nbrElements, const pinArray_t pins[]);
    void begin(byte nbrElements, const byte nbrPins, const pinArray_t pins[]); //seperate trg and echo pins
+   void begin(byte nbrElements, const byte nbrPins, const pinArray_t pins[], TwoWire &I2CBus, const byte addr ); // I2C
    void reset();
    void reportValue(int sequenceId, Stream * stream) ; // send the value of the given device
    void processRequestMsg(Stream *stream);
@@ -44,7 +46,11 @@ public:
    //void reportName(Stream *stream);
 private:
    int getDistance(int sequenceId);
-   boolean SeperateTrigEchoPins;
+   int readPulsedSensor(int sequenceId);
+   int readI2CSensor(int sequenceId);
+   boolean SeperateTrigEchoPins;   
+   TwoWire *i2cBus;
+   byte i2cAddr;
  };
   
 extern asipDistanceClass asipDistance;

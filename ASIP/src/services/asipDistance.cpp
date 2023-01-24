@@ -17,6 +17,7 @@
 asipDistanceClass::asipDistanceClass(const char svcId) : asipServiceClass(svcId)
 {
    svcName = PSTR("Distance");
+   i2cBus = NULL;
 }
 
 // each sensor uses 1 pin
@@ -36,6 +37,25 @@ void asipDistanceClass::begin(byte nbrElements, const byte nbrPins, const pinArr
      SeperateTrigEchoPins = true;
   }
   asipServiceClass::begin(nbrElements,nbrPins,pins);
+}
+
+// sensor uses I2C on given pins at given I2C address
+// only one I2C sensor is supported in this version (nbrElements should be 1)
+// to support more than 1 I2C sensor, code needed to accept array of sensor addresses
+// pinArray[0] is the SDA pin, pinarray[1] is SCL
+void asipDistanceClass::begin(byte nbrElements, const byte nbrPins, const pinArray_t pins[], TwoWire &I2CBus, const byte addr )
+{
+  //Serial.printf("nbr pins=%d, sda=%d, scl=%d, addr = %x\n", nbrPins,pins[0], pins[1], addr);
+ 
+  i2cBus = &I2CBus;
+  i2cAddr = addr;
+ 
+  asipServiceClass::begin(nbrElements,nbrPins,pins);
+
+  i2cBus->setSDA(pins[0]);
+  i2cBus->setSCL(pins[1]);
+  i2cBus->begin();
+  delay(20);
 }
 
 // this function rewrites the pins used by this service   
@@ -89,8 +109,18 @@ void asipDistanceClass::processRequestMsg(Stream *stream)
 
 int asipDistanceClass::getDistance(int sequenceId)
 {
-const long MAX_DISTANCE = 250;  // report distances up to 2.5 meter
-const long MAX_DURATION =   (MAX_DISTANCE * 58);
+    if(i2cBus != NULL) {
+        return readI2CSensor(sequenceId);
+    }
+    else{
+        return readPulsedSensor(sequenceId);
+    }  
+}
+
+int asipDistanceClass::readPulsedSensor(int sequenceId)
+{
+  const long MAX_DISTANCE = 100;  
+  const long MAX_DURATION =   (MAX_DISTANCE * 58);
 
   // The sensor is triggered by a HIGH pulse of 2 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
@@ -98,11 +128,10 @@ const long MAX_DURATION =   (MAX_DISTANCE * 58);
   if(SeperateTrigEchoPins){
      int index = 2*sequenceId;
      trigPin = pins[index];  
-     echoPin = pins[index+1];
-     delay(3);  // TODO is this needed?
+     echoPin = pins[index+1];  
   }
   else {
-    trigPin = echoPin = pins[sequenceId];
+    trigPin = echoPin = pins[sequenceId];    
   }
   pinMode(trigPin, OUTPUT);
   digitalWrite(trigPin, LOW);
@@ -121,9 +150,28 @@ const long MAX_DURATION =   (MAX_DISTANCE * 58);
   // The speed of sound is 340 m/s or 29 microseconds per centimeter.
   // The ping travels out and back, so to find the distance of the
   // object we take half of the distance travelled.
-  //int cm = (duration / 29) / 2;
-  int cm = (duration / 2) / 29.1;
-  return cm;  
+  int cm = (duration / 29) / 2;
+  return cm;    
 }
 
- 
+int asipDistanceClass::readI2CSensor(int sequenceId)
+{
+  // returns distance in cm or -1 if no sensor
+  i2cBus->beginTransmission(i2cAddr);
+  i2cBus->write(1);
+  uint8_t error = i2cBus->endTransmission(true);
+  delay(15);
+  //Read 3 bytes from the slave
+  const byte BYTES_TO_READ = 3;
+  uint8_t bytesReceived = i2cBus->requestFrom(i2cAddr, BYTES_TO_READ);
+  if (bytesReceived == BYTES_TO_READ) {  //If received request nbr bytes
+    uint8_t temp[BYTES_TO_READ];
+    i2cBus->readBytes(temp, BYTES_TO_READ);
+    uint32_t val = temp[2] + 256 * temp[1] + 256 * 256 * temp[0];
+    return (val / 1000);
+  }
+
+  else {
+    return -1;
+  } 
+}
