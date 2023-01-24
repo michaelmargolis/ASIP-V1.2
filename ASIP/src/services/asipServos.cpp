@@ -8,9 +8,6 @@
  * version 2.1 of the License, or (at your option) any later version.
  */
  
- #if defined (UNO_WIFI_REV2_328MODE)
-    #warning("servos not yet supported on Uno Wifi Rev 2 board")
-#else 
 #include "asipServos.h"
 
 asipServoClass::asipServoClass(const char svcId, const char evtId)
@@ -27,7 +24,7 @@ asipServoClass::asipServoClass(const char svcId, const char evtId)
   myServoPtr = servoPtr; 
   for(int i=0; i < nbrElements; i++) {     
      myServoPtr[i].attach(pins[i]);
-    // printf("Attaching servo id %d to pin %d\n", i, pins[i]);
+     verbose_printf("Attaching servo id %d to pin %d\n", i, pins[i]);
    }
 }
 
@@ -114,4 +111,3 @@ void asipServoClass::processRequestMsg(Stream *stream)
       reportError(ServiceId, request, ERR_UNKNOWN_REQUEST, stream);
    }   
 }
-#endif

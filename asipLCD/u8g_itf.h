@@ -107,7 +107,7 @@ class lcdInterface
     void lcdInterface::text(const char *txt, int row, int column)
     {   
         strlcpy(&lcdTextBuffer[row][column], txt, charsPerLine-column);
-        Serial.printf("text: row = %d, column= %d, txt=%s, buff=%s\n", row, column,txt, &lcdTextBuffer[row][column]);    
+        // Serial.printf("text: row = %d, column= %d, txt=%s, buff=%s\n", row, column,txt, &lcdTextBuffer[row][column]);    
         show();
     }
 

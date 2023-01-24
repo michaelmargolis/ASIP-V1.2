@@ -51,9 +51,10 @@ void asipDistanceClass::begin(byte nbrElements, const byte nbrPins, const pinArr
   i2cAddr = addr;
  
   asipServiceClass::begin(nbrElements,nbrPins,pins);
-
+#if defined (TARGET_RP2040) or defined (ARDUINO_ARCH_ESP32)
   i2cBus->setSDA(pins[0]);
   i2cBus->setSCL(pins[1]);
+#endif
   i2cBus->begin();
   delay(20);
 }
@@ -162,7 +163,7 @@ int asipDistanceClass::readI2CSensor(int sequenceId)
   uint8_t error = i2cBus->endTransmission(true);
   delay(15);
   //Read 3 bytes from the slave
-  const byte BYTES_TO_READ = 3;
+  size_t BYTES_TO_READ = 3;
   uint8_t bytesReceived = i2cBus->requestFrom(i2cAddr, BYTES_TO_READ);
   if (bytesReceived == BYTES_TO_READ) {  //If received request nbr bytes
     uint8_t temp[BYTES_TO_READ];

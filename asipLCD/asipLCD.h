@@ -106,7 +106,7 @@ void asipLCDClass::processRequestMsg(Stream *stream)
            char lineBuffer[lcd.charsPerLine+1];
            memset(&lineBuffer, 0, sizeof(lineBuffer));
            stream->readBytesUntil('\n', (char*)lineBuffer, lcd.charsPerLine);     
-           Serial.printf("asipLcd Line %d {%s}\n",  line, lineBuffer ) ;   
+           // Serial.printf("asipLcd Line %d {%s}\n",  line, lineBuffer ) ;   
            text(lineBuffer, line);
          }
       }
