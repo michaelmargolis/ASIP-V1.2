@@ -12,6 +12,7 @@
 #include "asip.h"
 #include "asipIO.h"
 
+
 #ifdef ASIP_DEBUG_SOFT_SERIAL
 #define DEBUG_TX_PIN 19   // connect TTL to USB adapter receive to this pin 
 // set up a new serial port
@@ -67,13 +68,13 @@ void asipClass::changeStream(Stream *s)
 { 
   stream = s;
 }
- 
+
 void asipClass::service()
 {   
   if(stream->available() >= MIN_MSG_LEN) {
      int tag = stream->read();
      if( tag > ' ') { // ignore control characters
-        //Serial.print("got asip tag "); Serial.write(tag);
+        // Serial.print("got asip tag "); Serial.write(tag); Serial.println();
         if(tag == SYSTEM_MSG_HEADER) {
           if(stream->read() == ',') {// tag must be followed by a separator 
               processSystemMsg();
@@ -85,7 +86,7 @@ void asipClass::service()
         else {
           int svc = 0; 
           while(svc < nbrServices) {
-            //Serial.printf("checking if tag %c equals %c \n", tag, services[svc]->ServiceId);  
+            // Serial.print(" checking if tag "); Serial.print((char)tag); Serial.print(" equals "); Serial.print(services[svc]->ServiceId);  
             if( services[svc]->ServiceId == tag) {
               if(stream->read() == ',') {// tag must be followed by a separator
                 // Serial.print("Received request for "); services[svc]->reportName(&Serial); Serial.print(", tag="); Serial.write(stream->peek()); Serial.println();
@@ -95,7 +96,8 @@ void asipClass::service()
             }
            svc++;
            if(svc >= nbrServices) { // check if no match
-             sendErrorMessage(tag, '?', ERR_INVALID_SERVICE, stream);                    
+
+             sendErrorMessage((char)tag, (const char)'?',ERR_INVALID_SERVICE, stream);                  
              while( stream->available() && stream->read() != '\n') // skip to the end of  line
                  ;             
             }   
@@ -107,17 +109,14 @@ void asipClass::service()
   sendDigitalPortChanges(stream, false);
   
   // auto events for services:
-  unsigned long currentTick = millis();
+  uint32_t currentTick = millis();
   for(int i=0; i < nbrServices; i++) {
     if( services[i]->autoInterval > 0) {  // zero disables autoInterval
-       //Serial.print("current tick ");  Serial.print(currentTick); Serial.print(" next trig at "); Serial.println( services[i]->nextTrigger);
-       //Serial.print("Auto report ");  Serial.print(i); Serial.print(" trig in "); Serial.println( long(services[i]->nextTrigger-currentTick));
-       //debug_printf("Auto report, tick= %u, trig = %u, interval=%u\n",currentTick,(currentTick - services[i]->nextTrigger),services[i]->autoInterval);
-       if( currentTick >= services[i]->nextTrigger )  {
+      if( currentTick >= services[i]->nextTrigger )  {
          services[i]->reportValues(stream);
          services[i]->nextTrigger =  currentTick + services[i]->autoInterval; // reset the count
-        //verbose_printf("Counter reset to %u\n", services[i]->nextTrigger);
-       }      
+         //verbose_printf("Counter reset to %u\n", services[i]->nextTrigger);
+      }      
     }    
   }  
 }
@@ -209,7 +208,7 @@ void asipClass::processSystemMsg()
        }
    }
    else {
-     sendErrorMessage(SYSTEM_MSG_HEADER, request, ERR_UNKNOWN_REQUEST, stream);
+     sendErrorMessage((char)SYSTEM_MSG_HEADER, (const char)request, ERR_UNKNOWN_REQUEST, stream);
    }
 }
 
@@ -435,16 +434,16 @@ void asipClass::sendAnalogPinMap()
   }
 }
 
-void asipClass::sendErrorMessage( const char svc, const char tag, asipErr_t errno, Stream *stream)
+void asipClass::sendErrorMessage( const char svc, const char tag, const asipErr_t err, Stream *stream)
 {
   stream->write(ERROR_MSG_HEADER);
   stream->write(svc);
   stream->write(',');
   stream->write(tag);  
   stream->write(',');  
-  stream->print(errno);
+  stream->print(err);
   stream->print('{');  
-  stream->print(errStr[errno]); 
+  stream->print(errStr[err]); 
   stream->write('}');
   stream->write(MSG_TERMINATOR);   
 } 
@@ -565,7 +564,7 @@ void asipServiceClass::reportName(Stream *stream)
   }
 }
 
-void asipServiceClass::reportError( const char svc, const char request, asipErr_t errno, Stream *stream)
+void asipServiceClass::reportError( const char svc, const char request, asipErr_t err, Stream *stream)
 {
-   asip.sendErrorMessage(svc,request, errno, stream);
+   asip.sendErrorMessage(svc,request, err, stream);
 }

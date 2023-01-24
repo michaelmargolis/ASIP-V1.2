@@ -103,7 +103,7 @@ public:
   void sendPortMap(); 
   void sendAnalogPinMap();
   void sendPinModes(); 
-  void sendErrorMessage( const char svc, const char tag, asipErr_t errno, Stream *stream); 
+  void sendErrorMessage( const char svc, const char tag, enum asipErr_t err, Stream *stream); 
 private:
   friend class asipIOClass; 
   // low level interface 

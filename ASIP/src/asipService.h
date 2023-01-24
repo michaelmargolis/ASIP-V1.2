@@ -36,7 +36,7 @@ public:
   virtual void reportValues(Stream *stream); // send all values separated by commas, preceded by header and terminated with newline
   virtual void setAutoreport(Stream *stream); // how many ticks between events, 0 disables 
   virtual void processRequestMsg(Stream *stream) = 0;
-  virtual void reportError( const char svc, const char request, asipErr_t errno, Stream *stream); // report service request errors
+  virtual void reportError( const char svc, const char request, asipErr_t err, Stream *stream); // report service request errors
   virtual void reportName(Stream *stream);
   virtual char getServiceId();  
   PGM_P svcName;
@@ -52,8 +52,8 @@ protected:
        
    
    friend class asipClass; 
-   unsigned int autoInterval;  // the number of ticks between each autoevent, 0 disables autoevents
-   unsigned long nextTrigger;   // tick value for the next event 
+   uint32_t autoInterval;      // the number of ticks between each autoevent, 0 disables autoevents
+   uint32_t nextTrigger;       // tick value for the next event 
 };
 
 typedef asipServiceClass* asipService;

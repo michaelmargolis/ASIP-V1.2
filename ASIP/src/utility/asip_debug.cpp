@@ -42,16 +42,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // 
 // Includes
 // 
-#include <avr/pgmspace.h>
-#include "Arduino.h"
+
+
 #include "asip_debug.h"
+
+#ifndef ARDUINO_ARCH_ESP32
+#include "Arduino.h"
+#include <avr/pgmspace.h>
+#endif
 
 // Buffer for printf
 #if defined(ASIP_DEBUG) && !defined(__MK20DX256__) 
 char _buf[ASIP_DEBUG_BUFFER_SIZE];   // increase buffer size for non-teensy if strings will be 80 chars or more
 #endif
 
-#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined (__MKL26Z64__)
+#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined (__MKL26Z64__) || defined (TARGET_RP2040) || defined (ARDUINO_ARCH_ESP32)
 //todo support for hardware serial can be added for Teensy 
 void SendOnlySoftwareSerial::begin(long speed)
 {
@@ -150,7 +155,7 @@ const int XMIT_START_ADJUSTMENT = 6;
 
 #else
 
-#error This version of SendOnlySoftwareSerial supports only 20, 16 and 8MHz processors
+#warning This version of SendOnlySoftwareSerial supports only 20, 16 and 8MHz processors
 
 #endif
 

@@ -17,6 +17,9 @@
 
 #include "asipIO.h"
 
+#if defined (ARDUINO_ARCH_ESP32) // temp workaround to bug in  __FlashStringHelper cast 
+#define FPSTR 
+#endif
 
 #ifdef ASIP_DEBUG
 // mode strings for debug
@@ -145,8 +148,8 @@ asipIOClass asipIO(id_IO_SERVICE,tag_ANALOG_VALUE );
 }
 
 void asipIOClass::begin( )
-{
-  verbose_printf(F("IO Begin:\n"));
+{    
+  verbose_printf(FPSTR("IO Begin:\n"));
   //memset(portRegisterTable, 0xff, MAX_IO_PORTS); // moved to constructor
   for ( byte p = 0; p < NUM_DIGITAL_PINS; p++) {
       AssignPort(p);
@@ -154,12 +157,13 @@ void asipIOClass::begin( )
 
 
   if (strictPinMode) {
-    verbose_printf(F("Strict PinMode\n"));
+      
+    verbose_printf(FPSTR("Strict PinMode\n"));
     analogInputsToReport = 0;
     // pins will be set to UNALLOCATED_PIN_MODE
   }
   else {
-    verbose_printf(F("Default PinMode\n"));
+    verbose_printf(FPSTR("Default PinMode\n"));
     // set all pins capable of analog input to ANALOG_MODE
     for ( byte pin = 0; pin < TOTAL_PINCOUNT; pin++) {
       if ( asip.getPinMode(pin) < RESERVED_MODE) {  
@@ -179,7 +183,7 @@ void asipIOClass::begin( )
         }
       }    
     }
-    verbose_printf(F("setting default auto interval\n\n"));
+    verbose_printf(FPSTR("setting default auto interval\n\n"));
     setAutoreport(DEFAULT_ANALOG_AUTO_INTERVAL);
   }
 }
@@ -274,7 +278,7 @@ void asipIOClass::processRequestMsg(Stream *stream)
       default:                          err = ERR_UNKNOWN_REQUEST;       
    }
    if( err != ERR_NO_ERROR){
-       asip.sendErrorMessage(id_IO_SERVICE, request, err, stream);
+       asip.sendErrorMessage(id_IO_SERVICE, request, (asipErr_t)err, stream);
    }
 }
 
@@ -282,7 +286,7 @@ void asipIOClass::setAnalogPinAutoReport(byte analogPin, boolean report)  // set
                                                                    // the autoInterval must be non-zero for message to be sent
                                                                    // using the AUTOEVENT_REQUEST message for the IO service
 { 
- if (analogPin < MAX_ANALOG_INPUTS) {
+ if (IS_PIN_ANALOG(analogPin)) {
     if(report == true) {      
       analogInputsToReport |= (1U << analogPin); 
     } else {
@@ -294,7 +298,7 @@ void asipIOClass::setAnalogPinAutoReport(byte analogPin, boolean report)  // set
        if(analogInputsToReport & (1U << pin) ) {         
           ++nbrActiveAnalogPins;          
         }
-    }  
+    }
   }
 }
 

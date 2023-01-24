@@ -9,6 +9,9 @@
  * version 2.1 of the License, or (at your option) any later version.
  */
 
+/* 
+ * added Pico 2040 support 12 Dec 2022
+ */
 
 #ifndef asip_boards_h
 #define asip_boards_h
@@ -176,7 +179,7 @@
 
 // Uno WiFi Rev 2 using ATmega4809
 #elif defined(UNO_WIFI_REV2_328MODE)
-#define TOTAL_PINCOUNT           20 
+#define TOTAL_PINCOUNT          20 
 #define TOTAL_ANALOG_PINS       5
 #define IS_PIN_DIGITAL(p)       ((p) >= 0 && (p) < TOTAL_PINCOUNT)
 #define IS_PIN_ANALOG(P)        ((P) >= 14 && (P) < 14 + NUM_ANALOG_INPUTS)
@@ -189,6 +192,68 @@
 #define SERIAL2_TX_PIN           255
 #define DIGITAL_PIN_TO_PORT(p)   digitalPinToPort(p)
 #define DIGITAL_PIN_TO_MASK(p)   digitalPinToBitMask(p)
+#define SERIAL_RX_PIN           0
+#define SERIAL_TX_PIN           1
+
+#elif defined(TARGET_RP2040) || defined(TARGET_RASPBERRY_PI_PICO)
+ #define TOTAL_PINCOUNT          28
+ #define TOTAL_ANALOG_PINS       3
+ #define VERSION_BLINK_PIN       LED_BUILTIN
+ #define IS_PIN_DIGITAL(p)       (((p) >= 0 && (p) < 23) || (p) == LED_BUILTIN)
+ #define IS_PIN_ANALOG(p)        ((p) >= 26 && (p) < 26 + TOTAL_ANALOG_PINS)
+ #define IS_PIN_PWM(p)           IS_PIN_DIGITAL(p)
+ #define IS_PIN_SERVO(p)         (IS_PIN_DIGITAL(p) && (p) != LED_BUILTIN)
+ #define SERIAL_RX_PIN            -1  //negative pin numbers if primary comms is over USB
+ #define SERIAL_TX_PIN            -1 
+ // From the data sheet I2C-0 defaults to GP 4 (SDA) & 5 (SCL) (physical pins 6 & 7)
+ // However, v2.3.1 of mbed_rp2040 defines WIRE_HOWMANY to 1 and uses the non-default GPs 6 & 7:
+ //#define WIRE_HOWMANY	(1)
+ //#define PIN_WIRE_SDA            (6u)
+ //#define PIN_WIRE_SCL            (7u)
+ #define IS_PIN_I2C(p)           ((p) == PIN_WIRE_SDA || (p) == PIN_WIRE_SCL)
+ // SPI-0 defaults to GP 16 (RX / MISO), 17 (CSn), 18 (SCK) & 19 (TX / MOSI) (physical pins 21, 22, 24, 25)
+ #define IS_PIN_SPI(p)           ((p) == PIN_SPI_SCK || (p) == PIN_SPI_MOSI || (p) == PIN_SPI_MISO || (p) == PIN_SPI_SS)
+ // UART-0 defaults to GP 0 (TX) & 1 (RX)
+ #define IS_PIN_SERIAL(p)        ((p) == 0 || (p) == 1 || (p) == 4 || (p) == 5 || (p) == 8 || (p) == 9 || (p) == 12 || (p) == 13 || (p) == 16 || (p) == 17)
+ #define PIN_TO_DIGITAL(p)       (p)
+ #define PIN_TO_ANALOG(p)        ((p) - 26)
+ #define PIN_TO_PWM(p)           (p)
+ #define PIN_TO_SERVO(p)         (p) 
+ #define DIGITAL_PIN_TO_PORT(p)   (p/8) 
+ #define DIGITAL_PIN_TO_MASK(p)   (1<<(p%8))     
+
+
+// ESP32
+// GPIO 6-11 are used for FLASH I/O, therefore they're unavailable here
+#elif defined(ESP32)
+#define TOTAL_PINCOUNT          34 // Input only pins 34-39 not used by asipio
+#define TOTAL_ANALOG_PINS       16
+#define TOTAL_PINS              TOTAL_PINCOUNT 
+#define digitalPinHasSPI(p)     ((p) == 12 || (p) == 13 || (p) == 14 || (p) == 15)
+#define PIN_SPI_MOSI            13
+#define PIN_SPI_MISO            12
+#define PIN_SPI_SCK             14
+#define digitalPinHasSerial(p)  ((p) == 16 || (p) == 17 || (p) == 1 || (p) == 3)
+// Pins 1 and 3 are used for the USB Serial communication. If we enable them here, the initial pin reset causes the serial communication
+// to not work after boot. 
+#define IS_PIN_DIGITAL(p)       ((p) == 0 || (p) == 2 || (p) == 4 || (p) == 5 || ((p) >= 12 && (p) < 24) || ((p) >= 25 && (p) < 28) || ((p) >= 32 && (p) <= 39))
+#define IS_PIN_ANALOG(p)        ((p) == 0 || (p) == 2 || (p) == 4 || (p) == 5 || ((p) >= 12 && (p) < 16) || ((p >= 25 && (p) < 28) || ((p) >= 32 && (p) < 37) || (p) == 39))
+#define IS_PIN_PWM(p)           (IS_PIN_DIGITAL(p))
+#define IS_PIN_SERVO(p)         IS_PIN_DIGITAL(p)
+#define IS_PIN_I2C(p)           ((p == 21) || (p == 22))
+#define IS_PIN_SPI(p)           (IS_PIN_DIGITAL(p) && digitalPinHasSPI(p))
+#define IS_PIN_INTERRUPT(p)     (digitalPinToInterrupt(p) > NOT_AN_INTERRUPT)
+#define IS_PIN_SERIAL(p)        (digitalPinHasSerial(p))
+#define PIN_TO_DIGITAL(p)       (p)
+#define DIGITAL_PIN_TO_PORT(p)   (p/8) 
+#define DIGITAL_PIN_TO_MASK(p)   (1<<(p%8))    
+#define PIN_TO_ANALOG(p)        digitalPinToAnalogChannel(p) // defined in esp32-hal-gpio.h
+// ESP32 supports PWM on almost all pins, but only 16 pins can use pwm at once.
+#define PIN_TO_PWM(p)           (p)
+#define PIN_TO_SERVO(p)         (p)
+#define DEFAULT_PWM_RESOLUTION  13
+#define DEFAULT_ADC_RESOLUTION  12
+#define LARGE_MEM_DEVICE        320
 
 #else
 #error "Analog pin macros not defined in board.h for this chip"
@@ -238,6 +303,10 @@
 #define CHIP_NAME "SAM3X8E"
 #elif defined (UNO_WIFI_REV2_328MODE)
 #define CHIP_NAME "Uno Wifi Rev2"
+#elif defined(TARGET_RP2040) || defined(TARGET_RASPBERRY_PI_PICO)
+#define CHIP_NAME "Pi Pico 2040"
+#elif defined(ARDUINO_ARCH_ESP32)
+#define CHIP_NAME "ESP32"
 #else
 #define CHIP_NAME "Unrecognized chip"
 #endif
