@@ -11,6 +11,7 @@
  */
 
 #include "asipRobot.h"
+#include "Robot_pins.h"
 #include "RobotDescription.h"
 #include "RobotMotor.h"
 
@@ -22,8 +23,8 @@
 
 
 //declare two encoder objects
-//static Encoder encoderLeftWheel(encoderLeftPins[0], encoderLeftPins[1]);
-//static Encoder encoderRightWheel(encoderRightPins[0], encoderRightPins[1]);
+static Encoder encoderLeftWheel(encoderPins[0], encoderPins[1]);
+static Encoder encoderRightWheel(encoderPins[2], encoderPins[3]);
 
 static boolean encoderEventsFlag = false; // true enables encoder events
 
@@ -78,8 +79,8 @@ robotMotorClass::robotMotorClass(const char svcId, const char evtId)
      ///wheel[i].encoderResetCume();
      wheel[i].setMotorLabel(motorLabels[i]); // just for debug messages, can be removed
   }
-  wheel[0].begin(NORMAL_DIRECTION,&pins[0], new Encoder(encoderPins[0], encoderPins[1])); 
-  wheel[1].begin(NORMAL_DIRECTION,&pins[3], new Encoder(encoderPins[2], encoderPins[3]));
+  wheel[0].begin(NORMAL_DIRECTION,&pins[0], &encoderLeftWheel); 
+  wheel[1].begin(NORMAL_DIRECTION,&pins[3], &encoderRightWheel);
   setAutoreport(1000/PID_FRAME_HZ);  
 }
 

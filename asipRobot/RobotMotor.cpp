@@ -10,7 +10,8 @@
 #include "RobotDescription.h"  // for wheel circumference
 #include "utility/asip_debug.h"
 
-RobotMotor::RobotMotor(byte pins[], Encoder *encoder)
+
+RobotMotor::RobotMotor(pinArray_t pins[], Encoder *encoder)
 {
    this->pins = pins;  
    this->encoder = encoder;
@@ -22,14 +23,14 @@ RobotMotor::RobotMotor()
    PID = new MotorPID(ENCODER_TICKS_PER_WHEEL_REV,MAX_PWM, MAX_PWM_DELTA); 
 }
 
-void RobotMotor::begin(int direction, byte pins[], Encoder *encoder)
+void RobotMotor::begin(const int direction, pinArray_t *pins, Encoder *encoder)
 {
    this->pins = pins;  
    this->encoder = encoder;
    begin(direction);
 }
 
-void RobotMotor::begin(int direction)
+void RobotMotor::begin(const int direction)
 {
  debug_printf("motor using pins %d,%d,%d\n", pins[0], pins[1], pins[2]) ;  
  // NOTE teensy can use non DRV8833  so H-Bridge type must be set explicitly  
@@ -38,7 +39,7 @@ void RobotMotor::begin(int direction)
 #endif  
   //pinMode(standbyPin, OUTPUT);
   
-  motorDirectionMode = direction ; // flag to set rotation when moving forward 
+  motorDirectionMode = (int)direction ; // flag to set rotation when moving forward 
   targetPwm = currentPwm = 0; 
   motorBrakeMode = false;  // freewheel
   motorStandbyMode = 0;

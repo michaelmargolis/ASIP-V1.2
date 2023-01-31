@@ -8,8 +8,9 @@
 #define RobotMotor_h
 #include "Arduino.h"
 #include "MotorPid.h"
+#include "Encoder.h"
 
-#include <RobotEncoder.h>
+typedef byte pinArray_t;
 
 enum motorPinIndex {in1Pin,in2Pin,PWMPin,EncApin,EncBpin};
 
@@ -30,10 +31,10 @@ class RobotMotor
 {
     public:      
         RobotMotor();  // constructor without pins used for auto board detect
-        RobotMotor(byte pins[], Encoder *encoder);
+        RobotMotor(pinArray_t pins[], Encoder *encoder);
         //RobotMotor(int In1Pin, int In2Pin, int PWMPin, int STBYPin);
-        void begin(int direction);  
-        void begin(int direction, byte pins[], Encoder *encoder ); // used for auto board detect
+        void begin(const int direction);  
+        void begin(const int direction, pinArray_t *pins, Encoder *encoder ); // used for auto board detect
         void setHbridgeType(int type);
         void setBrakeMode(boolean brakeMode);
         void stopMotor();
