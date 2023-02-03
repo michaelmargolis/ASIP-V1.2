@@ -14,6 +14,7 @@
 #include "Robot_pins.h"
 #include "RobotDescription.h"
 #include "RobotMotor.h"
+#include <Encoder.h>
 
 #include "config.h"
 
@@ -25,8 +26,9 @@
 //declare two encoder objects
 static Encoder encoderLeftWheel(encoderPins[0], encoderPins[1]);
 static Encoder encoderRightWheel(encoderPins[2], encoderPins[3]);
+static Encoder *encoders[2] = {&encoderLeftWheel, &encoderRightWheel};
 
-static boolean encoderEventsFlag = false; // true enables encoder events
+static boolean encoderEventsFlag = true; // true enables encoder events
 
 // left and right motor instances
 static RobotMotor wheel[NBR_WHEELS] = 
@@ -68,20 +70,18 @@ robotMotorClass::robotMotorClass(const char svcId, const char evtId)
     debug_printf("Config not found, using default PID values\n");
     saveConfig(); // store default PID values
   }
-#ifdef HUBEE_WHEELS
-  debug_printf("Initializing robot for HUBee wheels");
-  delay(1000);
-#endif 
   for(int i=0; i < NBR_WHEELS; i++) {
      wheel[i].setDirectionMode(0); //Direction Mode determines how the wheel responds to positive and negative motor power values 
      wheel[i].setBrakeMode(0);     //Sets the brake mode to zero - freewheeling mode - so wheels are easy to turn by hand
      wheel[i].PID->initPid(configData.Kp, configData.Ki, configData.Kd, configData.Ko );
      ///wheel[i].encoderResetCume();
      wheel[i].setMotorLabel(motorLabels[i]); // just for debug messages, can be removed
+     encoders[i]->begin();  // use modified encoder library that attaches interrupts in the begin method, not constructor 
   }
-  wheel[0].begin(NORMAL_DIRECTION,&pins[0], &encoderLeftWheel); 
-  wheel[1].begin(NORMAL_DIRECTION,&pins[3], &encoderRightWheel);
-  setAutoreport(1000/PID_FRAME_HZ);  
+
+  wheel[0].begin(NORMAL_DIRECTION,&pins[0]); 
+  wheel[1].begin(NORMAL_DIRECTION,&pins[3]);
+  setAutoreport(1000/PID_FRAME_HZ);  // motor autoreport must be set for encoder events and PID 
 }
 
 /*
@@ -91,6 +91,7 @@ robotMotorClass::robotMotorClass(const char svcId, const char evtId)
 {  
   asipServiceClass::begin(nbrElements,pinCount,pins);
   for(int i=0; i < NBR_WHEELS; i++) {
+      
 #ifdef DRV8833_HBRIDGE
      wheel[i].setHbridgeType(_DRV8833);
 #endif      
@@ -129,35 +130,42 @@ void robotMotorClass::reset()
   stopMotors();
 }
 
+void robotMotorClass::refreshEncoderCache(int side)
+{
+   // update encoder values   
+   if( side < 2) { 
+       encoder_state[side].pos = encoders[side]->read(); // todo adjust sign by multiply by motor direction
+       encoder_state[side].delta = encoder_state[side].pos - encoder_state[side].prevPos;
+       encoder_state[side].prevPos = encoder_state[side].pos; 
+
+       // debug_printf ("side = %d, encoder pos=%d\n", side, encoder_state[side].pos);   
+   }
+}
+
 // reportValues services PID and reports encoder events if encoderEventsFlag is true
 void robotMotorClass::reportValues(Stream *stream)
 {
-   // cache encoder data for sending to PID and reporting event
-   delta[0] = wheel[0].encoderDelta();
-   count[0] = wheel[0].encoderPos(); 
-   delta[1] = wheel[1].encoderDelta();
-   count[1] = wheel[1].encoderPos();
    wheel[0].isRampingPwm();  // motor acceleration control 
    wheel[1].isRampingPwm();
-   if( wheel[0].PID->isPidServiceNeeded()) {
-       if(!wheel[0].PID->servicePid(delta[0], leftMotorCallback))
-            wheel[0].stopMotor();
-   }   
-   if( wheel[1].PID->isPidServiceNeeded()) {
-       if(!wheel[1].PID->servicePid(-delta[1], rightMotorCallback))
-            wheel[1].stopMotor();
-   } 
+   refreshEncoderCache(0);
+   if( wheel[0].PID->isPidServiceNeeded())
+       if(!wheel[0].PID->servicePid(encoder_state[0].delta, leftMotorCallback))
+           wheel[0].stopMotor();   
+   refreshEncoderCache(1);
+   if( wheel[1].PID->isPidServiceNeeded())
+       if(!wheel[1].PID->servicePid(-encoder_state[1].delta, rightMotorCallback))
+           wheel[1].stopMotor();
    if(encoderEventsFlag) {
-      asipServiceClass::reportValues(stream);        
+       asipServiceClass::reportValues(stream);        
    }   
 }
 
 void robotMotorClass::reportValue(int sequenceId, Stream * stream)  // send the value of the given device
 {
    if( sequenceId < nbrElements) {
-       stream->print(delta[sequenceId]);
+       stream->print(encoder_state[sequenceId].delta);
        stream->write(':');   
-       stream->print(count[sequenceId]);
+       stream->print(encoder_state[sequenceId].pos);
     }
 }
   
@@ -229,9 +237,10 @@ void robotMotorClass::stopMotors()
    
 void robotMotorClass::resetEncoderTotals()
 {
-    for(int i=0; i < NBR_WHEELS; i++ ){
-       wheel[i].encoderResetCume();
-    }    
+    Serial.println("resetting encoder counts");
+    encoderLeftWheel.write(0);
+    encoderRightWheel.write(0);
+    encoder_state[0].prevPos = encoder_state[1].prevPos = 0;
 }
    
 void robotMotorClass::processRequestMsg(Stream *stream)
@@ -264,58 +273,10 @@ void robotMotorClass::processRequestMsg(Stream *stream)
           case tag_STOP_MOTORS: stopMotors(); break; 
           case tag_RESET_ENCODERS: resetEncoderTotals(); break;
           default: reportError(ServiceId, request, ERR_UNKNOWN_REQUEST, stream);
-       }
-       
+       }       
    }
 }
 
-encoderClass::encoderClass(const char svcId) : asipServiceClass(svcId)
-{
-  svcName = PSTR("Encoders");; 
-}
-
-// each encoder uses 2 pins
-void encoderClass::begin(byte nbrElements, byte pinCount, const pinArray_t pins[])
-{  
-  asipServiceClass::begin(nbrElements,pinCount,pins);
-}
-
-void encoderClass::reportValues(Stream *stream) 
-{
-  //encodersGetData(delta[0], count[0], delta[1], count[1]);
-  delta[0] = wheel[0].encoderDelta();
-  count[0] = wheel[0].encoderPos();
-  delta[1] = wheel[1].encoderDelta();
-  count[1] = wheel[1].encoderPos();
-  asipServiceClass::reportValues(stream);    
-  // delta width removed in this version
-}
-
-void encoderClass::reset()
-{
-  wheel[0].encoderResetCume();
-  wheel[1].encoderResetCume();  
-}
-
- void encoderClass::reportValue(int sequenceId, Stream * stream)  // send the value of the given device
-{
-   if( sequenceId < nbrElements) {
-       stream->print(delta[sequenceId]);
-       stream->write(':');   
-       stream->print(count[sequenceId]);
-    }
-}
-
-void encoderClass::processRequestMsg(Stream *stream)
-{
-   int request = stream->read();
-   if(request == tag_AUTOEVENT_REQUEST) {
-     setAutoreport(stream);
-   }
-   else {
-     reportError(ServiceId, request, ERR_UNKNOWN_REQUEST, stream);
-   }
-}
 
 bumpSensorClass::bumpSensorClass(const char svcId) : asipServiceClass(svcId)
 {

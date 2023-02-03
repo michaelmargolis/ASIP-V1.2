@@ -1,5 +1,6 @@
 import asip
 import tkinter as tk
+from tkinter import simpledialog
 import sys
 import socket
 
@@ -195,8 +196,11 @@ def main():
             print(sys.argv[1], 'is a com port - not yet implimented')
         else:
             addr = sys.argv[1]
-    else:        
-        addr = input("enter IP address of robot: ")
+    else:    
+        root.attributes('-alpha', 0.0)  # hide the root window so dialog is on top (tk wtf) 
+        root.attributes('-topmost', True)
+        addr = simpledialog.askstring('IP Address', 'Enter IP address of robot', parent=root)
+        root.attributes('-alpha', 1.0)  # hide the root window  
     if len(addr) < 7:
         sys.exit()
 

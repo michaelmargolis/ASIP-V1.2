@@ -18,7 +18,7 @@ void setConfigDefaults( )
   configData.Ko = 20;  
 }
 
-#if defined(TARGET_RP2040) || defined(TARGET_RASPBERRY_PI_PICO)
+#if defined(TARGET_RP2040) || defined(TARGET_RASPBERRY_PI_PICO) || ARDUINO_SAMD_ZERO
 // here if board does not have eeprom
 
 void saveConfig(){} // do nothing

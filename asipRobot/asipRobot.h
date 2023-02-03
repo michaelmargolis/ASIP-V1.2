@@ -6,6 +6,8 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
+ *
+ * distinct encoder class removed in ASIPv1.2, encoders are supported within motor class
  */
 
 #ifndef robot_h
@@ -16,8 +18,8 @@
 #include "asip.h"
 #include "RobotMotor.h"  // for H-bridge enums
 
-#ifdef MOVED_TO_SKETCH  // include the appropriate one in the sketch file
-#if defined (UNO_WIFI_REV2_328MODE)
+#ifdef NOT_MOVED_TO_SKETCH  // include the appropriate one if not defined in sketch folder
+#if defined (UNO_WIFI_REV2_328MODE) || defined (ARDUINO_SAMD_ZERO) // zero uses same pins as uno
   #include "UnoWifiRobot_pins.h"  
 #elif defined(__MK20DX256__) // Teensy 3.x
   #include "mirto2020Pins.h"
@@ -45,6 +47,13 @@ const char tag_ROTATE_ROBOT_ANGLE   = 'a'; // Robot rotation using given degrees
 const char tag_STOP_MOTOR           = 's';  
 const char tag_STOP_MOTORS          = 'S';
 const char tag_RESET_ENCODERS       = 'E'; // rest total counts to zero
+
+
+typedef struct {
+        int32_t delta;
+        int32_t pos;
+        int32_t prevPos; // previous encoder reading 
+} Encoder_state_t;
 
 
 
@@ -78,6 +87,7 @@ public:
    void setHbridgeType(int type); // enum indicating h-bridge
    int boardDetect();  // enum indicating board
    void reset();
+   void refreshEncoderCache(int side);
    void reportValue(int sequenceId, Stream * stream) ; // send the value of the given device
    void reportValues(Stream *stream);   
    void setMotorPower(byte motor, int power);
@@ -94,24 +104,8 @@ public:
    void processRequestMsg(Stream *stream);
  //  void reportName(Stream *stream);
  private:
-  long delta[NBR_WHEELS];  // this is now the number of ticks since the last event
-  long count[NBR_WHEELS];
+   Encoder_state_t encoder_state[NBR_WHEELS];
  };
-   
-class encoderClass : public asipServiceClass
-{  
-public:
-   encoderClass(const char svcId);
-   void begin(byte nbrElements, byte pinCount, const pinArray_t pins[]);
-   void reset();
-   void reportValues(Stream * stream);
-   void reportValue(int sequenceId, Stream * stream) ; // send the value of the given device   
-   void processRequestMsg(Stream *stream);
-  // void reportName(Stream *stream);
-private:
-  long delta[NBR_WHEELS];  // this is now the number of ticks since the last event
-  long count[NBR_WHEELS];  
-};   
    
 
 class bumpSensorClass : public asipServiceClass

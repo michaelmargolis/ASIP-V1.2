@@ -16,7 +16,7 @@ const int AUTO_STOP_INTERVAL  = 2000; // turn off PWM if no encoder pulses after
  * PID code manage from intervals or relagate this to an extrnal schedular
  * uncomment EXTERNAL_PID_SCHEDULAR if used with ASIP or other scheduling code
  */
-#define EXTERNAL_PID_SCHEDULAR // define this if frame intervals are controlled externally
+#define EXTERNAL_PID_SCHEDULAR // define this if frame intervals are controlled by ASIP motor code
 
 typedef void (*motorPwmFunc)(int); // callback to control motor PWM
  

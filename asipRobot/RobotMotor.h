@@ -8,7 +8,6 @@
 #define RobotMotor_h
 #include "Arduino.h"
 #include "MotorPid.h"
-#include "Encoder.h"
 
 typedef byte pinArray_t;
 
@@ -31,10 +30,10 @@ class RobotMotor
 {
     public:      
         RobotMotor();  // constructor without pins used for auto board detect
-        RobotMotor(pinArray_t pins[], Encoder *encoder);
+        RobotMotor(pinArray_t pins[]);
         //RobotMotor(int In1Pin, int In2Pin, int PWMPin, int STBYPin);
         void begin(const int direction);  
-        void begin(const int direction, pinArray_t *pins, Encoder *encoder ); // used for auto board detect
+        void begin(const int direction, pinArray_t *pins ); // used for auto board detect
         void setHbridgeType(int type);
         void setBrakeMode(boolean brakeMode);
         void stopMotor();
@@ -42,16 +41,10 @@ class RobotMotor
         void setDirectionMode(int mode);  // 1 normal dir, -1 dir inverted
         //int getDirection(); // range +-MAX_PWM, positive is forward
         void setMotorPower(int MPower); // range is -100 to 100                
-        void setMotorRPM(int RPM, unsigned long duration); // duration in ms 
+        void setMotorRPM(int RPM, uint32_t duration); // duration in ms 
         void setMotorPwm(int pwm);        
         void setMotorLabel(const char *label); // for debug print only  
-        boolean isRampingPwm(); // returns true if motor coming up to speed        
-
-        // encoder methods
-        long encoderDelta();
-        long encoderPos();
-        void encoderResetCume();
-
+        boolean isRampingPwm(); // returns true if motor coming up to speed          
         MotorPID *PID; // todo - make private?
         const char *label; // only used for debug print to identify motor    ;
         
@@ -67,9 +60,7 @@ class RobotMotor
         byte *pins;
         byte pwmPin;
         int standbyPin;
-        unsigned long prevPwmRampTime;           // time of most increse in PWM to control rate motor comes up to speed      
-        Encoder *encoder;
-        long prevPos; // previous encoder reading 
+        uint32_t prevPwmRampTime;           // time of most increse in PWM to control rate motor comes up to speed      
         int hBridgeType;
 
 };

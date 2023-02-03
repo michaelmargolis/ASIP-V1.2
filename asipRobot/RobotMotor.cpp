@@ -9,12 +9,10 @@
 #include "RobotMotor.h" 
 #include "RobotDescription.h"  // for wheel circumference
 #include "utility/asip_debug.h"
-
-
-RobotMotor::RobotMotor(pinArray_t pins[], Encoder *encoder)
+      
+RobotMotor::RobotMotor(pinArray_t pins[])
 {
    this->pins = pins;  
-   this->encoder = encoder;
    PID = new MotorPID(ENCODER_TICKS_PER_WHEEL_REV,MAX_PWM, MAX_PWM_DELTA); 
 }
 
@@ -23,10 +21,9 @@ RobotMotor::RobotMotor()
    PID = new MotorPID(ENCODER_TICKS_PER_WHEEL_REV,MAX_PWM, MAX_PWM_DELTA); 
 }
 
-void RobotMotor::begin(const int direction, pinArray_t *pins, Encoder *encoder)
+void RobotMotor::begin(const int direction, pinArray_t *pins)
 {
    this->pins = pins;  
-   this->encoder = encoder;
    begin(direction);
 }
 
@@ -198,39 +195,12 @@ boolean RobotMotor::isRampingPwm() // returns true if motor coming up to speed
 }
    
 
-void RobotMotor::setMotorRPM(int RPM, unsigned long duration) 
-{ 
+void RobotMotor::setMotorRPM(int RPM, uint32_t duration) 
+{                                                   
   if( abs(RPM) > 0 ) {
-      long targetTicksPerSecond = long(((long)RPM * ENCODER_TICKS_PER_WHEEL_REV) / 60 );      
+      int32_t targetTicksPerSecond = int32_t(((int32_t)RPM * ENCODER_TICKS_PER_WHEEL_REV) / 60 );      
       PID->startPid(targetTicksPerSecond, duration);
       debug_printf("%s %s, ticksPerSecond set to %d, dur=%d\n",
                    label, RPM >= 0 ? "forward":"reversed",targetTicksPerSecond, duration );
   }       
 }
-
-
-/*
- *  Encoder code *  
- */
-
-
-long RobotMotor::encoderDelta()
-{  
-   long pos = encoderPos();
-   long delta = pos - prevPos;
-   prevPos = pos;	
-   return delta;  
-}
-
-long RobotMotor::encoderPos()
-{	
-  //Serial.printf("wheel %s,pos = %d\n", label, encoder->read());
-  return encoder->read() * motorDirectionMode;
-}
-
-void RobotMotor::encoderResetCume()
-{    
-    encoder->write(0);
-    prevPos =0;
-}
-
