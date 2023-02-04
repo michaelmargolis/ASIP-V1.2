@@ -34,6 +34,9 @@
 #include <asip.h>                  // the base class definitions
 #include <asipIO.h>                // the core I/O class definition
 
+#include "mirtoHardware.h"  // these defines were previously in robot_pins header file
+#include "Robot_pins.h" // defines for encoder pins
+
 // the following three services are supported by the standard Arduino distribution
 #include <services/asipTone.h>      // square wave tone generator
 
@@ -43,7 +46,7 @@
 #include <asipLCD.h>          // LCD
 #include <services/asipDistance.h> // ultrasonics distance sensor
 
-#include "UnoWifiRobot_pins.h"  // hardware pin defines
+//#include "UnoWifiRobot_pins.h"  // hardware pin defines
 
 #ifdef ASIP_DEBUG
 //#error "ASIP_DEBUG must be disabled when using this board, (it's in debug.h in asip lib folder)
@@ -73,14 +76,6 @@ WiFiServer server(asipPort);
 int status = WL_IDLE_STATUS;
 
 char const *sketchName = "MirtoUnoWiFi";
-
-int tonePin;
-
-const byte MAX_PIXELS = 1;  // increase this if more pixels are required
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(MAX_PIXELS, neoPixelPin, NEO_GRB + NEO_KHZ800);  // instantiate a strip
-
-//U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0); 
-U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, SCL, SDA);
 
 // create the services defined in asipRobot.h
 robotMotorClass motors(id_MOTOR_SERVICE, NO_EVENT);
@@ -122,8 +117,6 @@ void setup()
   // start the services
   // Board define is in UnoWifiRobot_pins.h
   motors.begin(2, 6, motorPins, 4, encoderPins); // two motors,a total of 6 motor pins,4 encoder pins
-  tonePin = _tonePin;  // #defined in robot_pins.h
-
   bumpSensors.begin(2, 2, bumpPins);
   irLineSensors.begin(3, 4, irReflectancePins); // 3 sensors plus control pin
  // accelerometer.begin(3,startSPI);
