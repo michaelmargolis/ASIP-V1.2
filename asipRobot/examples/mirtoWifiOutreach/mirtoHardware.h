@@ -16,6 +16,7 @@
     #define MAX_LCD_LINES 5
     #define MAX_LCD_CHARS_PER_LINE  21 
     #define IS_LCD_FLIPPED false
+    #define _U8G_LCD_ // use u8g2lib
     #include <U8g2lib.h> 
     // U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, SCL, SDA); // 128x64 oled
     U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
@@ -61,9 +62,10 @@
     
     #define _U8G_LCD_ // use u8g2lib
     #include <U8g2lib.h> 
-    U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, SCL, SDA); // 128x32 oled
+    U8G2_SH1106_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, SCL, SDA, U8X8_PIN_NONE);
+    //U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, SCL, SDA); // 128x32 oled
     #define LCD_FONT lcd_MEDIUM_FONT
-    #define MAX_LCD_LINES 2
+    #define MAX_LCD_LINES 5
     #define MAX_LCD_CHARS_PER_LINE  21 
     #define IS_LCD_FLIPPED false
 
@@ -80,9 +82,9 @@
     #elif  defined _TFT_LCD_
     #include <TFT_eSPI.h>
     #include <SPI.h>
-    TFT_eSPI tft = TFT_eSPI(135, 240);  // Invoke custom library    
+    TFT_eSPI tft = TFT_eSPI(135, 240);  // copy Setup_asip_ST7789.h to TFT_eSPI/User_Setups  
     #define peripheralPinsToReserve 5 // five lcd pins to be reserved
-    pinArray_t peripheralPins[] = {1,2,3,4,5}; // pins used for LCD
+    pinArray_t peripheralPins[] = {1,2,3,4,5}; // pins used for LCD must match Setup_asip_ST7789.h
     #endif
     
     #define LCD_FONT lcd_MEDIUM_FONT
