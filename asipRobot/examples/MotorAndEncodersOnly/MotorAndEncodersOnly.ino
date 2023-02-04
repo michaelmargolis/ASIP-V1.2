@@ -13,13 +13,13 @@
 
 // the following services use seperate libraries 
 #include <asipRobot.h>        // definitions for mirtle services(motor, ir, encoder etc) 
-#include <asipPixels.h>       // for neopixels 
+//#include <asipPixels.h>       // for neopixels 
 
 
 char const *sketchName = "MotorsOnly";
 
 // only needed if you want to dim the neopixel on Mirto board pin 2
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(1, 2, NEO_RGB + NEO_KHZ400);
+//Adafruit_NeoPixel strip = Adafruit_NeoPixel(1, 1, NEO_RGB + NEO_KHZ400);
 
 // create the services
 robotMotorClass motors(id_MOTOR_SERVICE, NO_EVENT);
@@ -32,12 +32,14 @@ asipService services[] = {
    &asipIO, // the core class for pin level I/O
 #endif                                 
    &motors};
-
+ pinArray_t motorPins[]   = {6,9,255, 10,5,255};  // L-in1,L-in2, pwm,  R-in1,R-in2, pwm
+ const byte encoderPins[] = {7,2,3,4};
 void setup()
 {  
-  dimNeopixel();
+  //dimNeopixel();
   beginAsipComms();   
   // start the services
+  
   motors.begin(2,6,motorPins,4,encoderPins); // two motors,a total of 6 motor pins,4 encoder pins    
   //motors.begin(2,6,motorPins); // two motors that use a total of 6 pins, no encoder (no PID)  
   //encoders.begin(2,4,encoderPins); // two encoders that use a total of 4 pins 
@@ -45,10 +47,10 @@ void setup()
 #ifdef ledPin  
  asipIO.PinMode(ledPin,OUTPUT_MODE); 
 #endif  
-  asipIO.begin();  // NEW from  v1.1: core I/O service must follow all other service begin methods
+ // asipIO.begin();  // NEW from  v1.1: core I/O service must follow all other service begin methods
   
-  asip.sendPinModes(); // for debug
-  asip.sendPortMap(); 
+  //asip.sendPinModes(); // for debug
+  //asip.sendPortMap(); 
 #endif
 
   for(unsigned int i=0; i < asipServiceCount(services); i++)
@@ -64,8 +66,9 @@ void beginAsipComms()
 {
 
   Serial.begin(ASIP_BAUD);   // init both ports even though only one used for ASIP
-  Serial3.begin(ASIP_BAUD); 
-  delay(200); // wait for USB to init - todo     
+ // Serial3.begin(ASIP_BAUD); 
+  delay(200); // wait for USB to init - todo  
+  /*   
   if( bitRead(USB0_OTGSTAT,5))  // todo temp force ignore
   {
     // Pi connected to Serial3 UART
@@ -76,8 +79,10 @@ void beginAsipComms()
      asip.begin(&Serial, asipServiceCount(services), services, sketchName); 
     
   }
-  asip.reserve(SERIAL3_RX_PIN);  // reserve pins used for Pi serial comms 
-  asip.reserve(SERIAL3_TX_PIN);  // board specific defines are in asip/boards.h
+  */
+   asip.begin(&Serial, asipServiceCount(services), services, sketchName); 
+ // asip.reserve(SERIAL3_RX_PIN);  // reserve pins used for Pi serial comms 
+ // asip.reserve(SERIAL3_TX_PIN);  // board specific defines are in asip/boards.h
 }
 
 void loop() 
@@ -89,8 +94,10 @@ void loop()
 // set the onboard LED to very dim blue
  void dimNeopixel()
 {
+  /*
    strip.begin();   
    strip.show(); // Initialize all pixels to 'off' 
    strip.setPixelColor(0,strip.Color(0,0,3));
    strip.show(); // Initialize all pixels to 'off'
+   */
 }
