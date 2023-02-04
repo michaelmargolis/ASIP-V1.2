@@ -16,3 +16,12 @@ This repository includes the code for core Asip functionality and the following 
 * Added support for wider range of LCD hardware, including color displays
 * Enhanced ASIP pixels to enable setting of background color on LCD displays
 * Changes are backwards compatible – all ASIP 1.1 clients should work as is with V1.2
+
+
+### Installation ###
+Copy the following folders from this repository to your Arduino libraries directory:
+* ASIP
+* asipPixels - needs Adafruit_NeoPixel library
+* asipLCD - needs U8g2 and/or TFT-eSPI libraries depending on sketch
+* asipRobot - Needs modification to some third party libraries, see readme file in 'Modified arduino libraries' folder
+* asipHeading and/or asipIMU if you need IMU support
