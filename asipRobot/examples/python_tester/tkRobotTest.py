@@ -92,12 +92,13 @@ class Tester:
         self.tests = None
         self.button= None
     
-    def start_test(self, id, button, tests, label, caption):
+    def start_test(self, id, button, tests, label, caption, dur=1000):
         if self.active_id != None:
             print('another  test is in progress')
             return 
         else:
             self.active_id = id
+            self.dur = dur
             self.button = button
             self.test_nbr =0
             self.tests = tests
@@ -117,7 +118,7 @@ class Tester:
                 if self.coms:
                     self.coms.send(self.tests[self.test_nbr][1])        
                 self.test_nbr += 1
-                self.ui_utils.root.after(1000, self.do_test, self.active_id)
+                self.ui_utils.root.after(self.dur, self.do_test, self.active_id)
             else:
                 # done !!
                 self.active_id = None
@@ -152,7 +153,7 @@ class Tests:
         self.lb_logger.pack(padx='6', pady='6', fill='both')
         
     def test_motors(self):
-        tests = (('forward 25%', 'M,M,25,25\n'), ('forward 50%', 'M,M,50,50\n'), ('forward 75%', 'M,M,75,75\n'), ('stopped', 'M,M,0,0\n'),('reverse 50%', 'M,M,-50,-50\n'),('stopped', 'M,M,0,0\n') )
+        tests = (('forward 50%', 'M,M,50,50\n'), ('stopped', 'M,M,0,0\n'),('reverse 50%', 'M,M,-50,-50\n'),('stopped', 'M,M,0,0\n') ,('rotate cw', 'M,c,180,500\n'), ('rotate cw', 'M,c,-180,500\n'))
         self.tester.start_test(asip.id_MOTOR_SERVICE, self.btnMotors, tests, self.lbl_motors, "Setting motors to ")
 
     def test_servo(self):
@@ -164,8 +165,15 @@ class Tests:
         self.tester.start_test(asip.id_PIXELS_SERVICE, self.btnColor, tests, self.lbl_color, "Setting color to ")
 
     def test_sound(self):
-        tests = (('','T,P,440,800\n'),('','T,P,1000,800\n'),('','T,P,1000,800\n'),('','T,P,440,1000\n'))
-        self.tester.start_test(asip.id_TONE_SERVICE, self.btnSound, tests,  None, None)
+        tones = [262,294,330,349,392,440,494]
+        score = [0,0,4,4,5,5,4,3,3,2,2,1,1,0]
+        tests = []
+        dur = 330
+        for note in score:
+            test = 'T,P,{},200\n'.format(tones[note])
+            tests.append(('',test))
+        # tests = (('','T,P,440,800\n'),('','T,P,1000,800\n'),('','T,P,1000,800\n'),('','T,P,440,1000\n'))
+        self.tester.start_test(asip.id_TONE_SERVICE, self.btnSound, tests,  None, None, dur+10)
 
     def logger(self, msg):
         # print(msg)
