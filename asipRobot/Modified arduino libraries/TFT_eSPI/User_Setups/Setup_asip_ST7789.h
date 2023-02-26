@@ -15,14 +15,23 @@
 //#define TFT_INVERSION_OFF
 
 
-// Mirto PICO green PCB R2
-#define TFT_MISO  3
-#define TFT_MOSI -1
-#define TFT_SCLK  2
-#define TFT_CS    5
-#define TFT_DC    4
-#define TFT_RST   1  
-#define TFT_BL   -1 // bl not controlled
+#ifdef GREEN_PROTO_PCB // green Pico protytpe PCB    
+    #define TFT_MISO  3
+    #define TFT_MOSI -1
+    #define TFT_SCLK  2
+    #define TFT_CS    5
+    #define TFT_DC    4
+    #define TFT_RST   1  
+    #define TFT_BL   -1 // bl not controlled
+#else
+    #define TFT_MISO  3
+    #define TFT_MOSI -1
+    #define TFT_SCLK  2
+    #define TFT_CS    7
+    #define TFT_DC    6
+    #define TFT_RST   21  
+    #define TFT_BL   -1 // bl not controlled
+#endif
 
 #define TFT_BACKLIGHT_ON HIGH
 

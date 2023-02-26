@@ -67,7 +67,7 @@ const char DEBUG_MSG_INDICATOR = '!';  // debug text within info messages are pr
 #ifdef ASIP_DEBUG
 //#define ASIP_DEBUG_SOFT_SERIAL
 
-#if defined(__MK20DX256__) // Teensy 3.1
+#if defined(HAS_SERIAL_PRINTF) // defined in boards.h
 #define debug_printf                    \
     debugStream->write(DEBUG_MSG_INDICATOR); \
     debugStream->printf
@@ -78,7 +78,7 @@ extern char _buf[];  // for printf
     do {                            \
         sprintf(_buf, __VA_ARGS__); debugStream->print(_buf); \
     } while (0) 
-#endif // check for teensy or other chip    
+#endif // check for serial printf support 
 #else // #ASIP_DEBUG not defined
 #define debug_printf(...) 
 #endif // PRINTF_DEBUG

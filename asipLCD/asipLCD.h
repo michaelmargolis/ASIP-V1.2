@@ -49,7 +49,8 @@ class asipLCDClass : public asipServiceClass
 {  
 public:
    asipLCDClass(const char svcId, const char evtId);
-   void begin(int fontSize=lcd_SMALL_FONT, bool invert=false); 
+   void begin(int fontSize=lcd_SMALL_FONT, bool invert=false);
+   void begin(byte nbrPins, const pinArray_t pins[], int fontSize=lcd_SMALL_FONT, bool invert=false); 
    void reset();
    void reportValues(Stream * stream);
    void reportValue(int sequenceId, Stream * stream) ; // not used in this service  
@@ -79,6 +80,11 @@ void asipLCDClass::begin(int fontSize, bool invert)
     lcd.begin(fontSize, invert);
 }
 
+void asipLCDClass::begin(byte nbrPins, const pinArray_t pins[], int fontSize, bool invert)
+{
+    asipServiceClass::begin(1, nbrPins, pins);
+    lcd.begin(fontSize, invert);
+}
 
 void asipLCDClass::reset()
 {

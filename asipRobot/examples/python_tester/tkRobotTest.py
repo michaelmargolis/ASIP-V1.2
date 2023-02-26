@@ -108,6 +108,7 @@ class Tester:
             if self.coms:
                 self.coms.send('L,W,3,'+'Testing ' + button.cget('text') + '\n' )   
             self.do_test(id)
+
     
     def do_test(self, id):
         if id == self.active_id:
@@ -127,6 +128,7 @@ class Tester:
                 self.button.config(relief=tk.RAISED)
                 if self.coms:
                     self.coms.send('L,W,3,Test completed\n' )  
+                self.ui_utils.set_text(self.label,  "") 
     
 # test handlers called from button presses
 
@@ -149,11 +151,20 @@ class Tests:
         self.lbl_color=ui_utils.create_label("Color")
         self.lbl_distance=ui_utils.create_label("Distance")
         self.lbl_servo=ui_utils.create_label("Servo")
-        self.lb_logger=tk.Listbox(ui_utils.root)
+        self.lb_logger=tk.Listbox(ui_utils.root, height = 6)
         self.lb_logger.pack(padx='6', pady='6', fill='both')
+        self.asip_msg = tk.StringVar()
+        self.frmCommand = tk.Frame(ui_utils.root) 
+        self.txt_cmd = tk.Entry(self.frmCommand, textvariable=self.asip_msg, width=40).pack(side=tk.LEFT, fill=tk.X)
+        self.btn_cmd = tk.Button(self.frmCommand, text='Send ASIP', command=self.asip_cmd, width=10).pack(side=tk.LEFT,padx=(4,4))
+        self.frmCommand.pack()
+        
+    def asip_cmd(self):
+        msg = self.asip_msg.get()
+        self.tester.coms.send(msg + '\n')
         
     def test_motors(self):
-        tests = (('forward 50%', 'M,M,50,50\n'), ('stopped', 'M,M,0,0\n'),('reverse 50%', 'M,M,-50,-50\n'),('stopped', 'M,M,0,0\n') ,('rotate cw', 'M,c,180,500\n'), ('rotate cw', 'M,c,-180,500\n'))
+        tests = (('forward 50%', 'M,M,50,50\n'), ('stopped', 'M,M,0,0\n'),('reverse 50%', 'M,M,-50,-50\n'),('stopped', 'M,M,0,0\n') ,('rotate cw', 'M,a,90,90\n'), ('rotate ccw', 'M,a,90,-90\n'))
         self.tester.start_test(asip.id_MOTOR_SERVICE, self.btnMotors, tests, self.lbl_motors, "Setting motors to ")
 
     def test_servo(self):

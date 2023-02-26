@@ -1,7 +1,7 @@
 /*
  * asip.cpp -  Arduino Services Interface Protocol (ASIP)
  * 
- * Copyright (C) 2014 Michael Margolis
+ * Copyright (C) 2014,2020 Michael Margolis
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -11,13 +11,6 @@
 
 #include "asip.h"
 #include "asipIO.h"
-
-
-#ifdef ASIP_DEBUG_SOFT_SERIAL
-#define DEBUG_TX_PIN 19   // connect TTL to USB adapter receive to this pin 
-// set up a new serial port
-SendOnlySoftwareSerial debugSoftSerial (DEBUG_TX_PIN);  
-#endif
 
 // message strings, Move this to program memory ?
 char const *errStr[] = {"NO_ERROR", "INVALID_SERVICE", "UNKNOWN_REQUEST", "INVALID_PIN", "MODE_UNAVAILABLE", "INVALID_MODE", "WRONG_MODE", "INVALID_DEVICE_NUMBER", "DEVICE_NOT_AVAILABLE", "I2C NOT ENABLED"};
@@ -32,13 +25,7 @@ asipClass:: asipClass(){
  
 void asipClass::begin(Stream *s, int svcCount, asipServiceClass **serviceArray, char const *sketchName )
 {
-  stream = s;  
-#ifdef ASIP_DEBUG_SOFT_SERIAL
-  debugSoftSerial.begin(ASIP_DEBUG_BAUD); // todo, move this to asip_debug.h ?
-  debugStream = &debugSoftSerial; 
-#else
- //debugStream = DEBUG_STREAM;  // defined in asip_debug.h
-#endif 
+ stream = s;  
  debug_printf("\n"); // debug output 
  debug_printf("ASIP %d.%d with sketch %s on %s\n", ASIP_MAJOR_VERSION, ASIP_MINOR_VERSION, sketchName, CHIP_NAME);
  verbose_printf("Verbose Debug enabled\n"); // this will only print if VERBOSE_DEBUG macro argument is uncommented
@@ -46,9 +33,6 @@ void asipClass::begin(Stream *s, int svcCount, asipServiceClass **serviceArray, 
   services = serviceArray;
   nbrServices = svcCount; 
 
-#ifdef DEBUG_TX_PIN
-  asip.reserve(DEBUG_TX_PIN); 
-#endif  
   programName = (char*)sketchName;
   s->write(INFO_MSG_HEADER);
   s->print(sketchName);  

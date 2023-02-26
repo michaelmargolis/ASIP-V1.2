@@ -122,7 +122,8 @@
 #define SERIAL3_RX_PIN           7
 #define SERIAL3_TX_PIN           8
 #define DIGITAL_PIN_TO_PORT(p)   (p/8) 
-#define DIGITAL_PIN_TO_MASK(p)   (1<<(p%8))     
+#define DIGITAL_PIN_TO_MASK(p)   (1<<(p%8))   
+#define HAS_SERIAL_PRINTF  
 
 // Teensy LC
 #elif defined(__MKL26Z64__)
@@ -142,7 +143,8 @@
 #define SERIAL1_RX_PIN           0
 #define SERIAL1_TX_PIN           1
 #define DIGITAL_PIN_TO_PORT(p)   (p/8) 
-#define DIGITAL_PIN_TO_MASK(p)   (1<<(p%8))     
+#define DIGITAL_PIN_TO_MASK(p)   (1<<(p%8))  
+#define HAS_SERIAL_PRINTF   
 
 
 
@@ -220,7 +222,8 @@
  #define PIN_TO_PWM(p)           (p)
  #define PIN_TO_SERVO(p)         (p) 
  #define DIGITAL_PIN_TO_PORT(p)   (p/8) 
- #define DIGITAL_PIN_TO_MASK(p)   (1<<(p%8))     
+ #define DIGITAL_PIN_TO_MASK(p)   (1<<(p%8))
+ #define HAS_SERIAL_PRINTF 
 
 
 // ESP32
@@ -254,6 +257,27 @@
 #define DEFAULT_PWM_RESOLUTION  13
 #define DEFAULT_ADC_RESOLUTION  12
 #define LARGE_MEM_DEVICE        320
+#define HAS_SERIAL_PRINTF
+
+#elif defined (ARDUINO_SAMD_ZERO) 
+#define TOTAL_PINCOUNT          25 // 14 digital + 6 analog + 2 i2c + 3 spi
+#define TOTAL_ANALOG_PINS       6
+#define VERSION_BLINK_PIN       LED_BUILTIN
+//#define PIN_SERIAL1_RX          0 // already defined in zero core variant.h
+//#define PIN_SERIAL1_TX          1 // already defined in zero core variant.h
+#define IS_PIN_DIGITAL(p)       ((p) >= 0 && (p) <= 19)
+#define IS_PIN_ANALOG(p)        ((p) >= 14 && (p) < 14 + TOTAL_ANALOG_PINS)
+#define IS_PIN_PWM(p)           digitalPinHasPWM(p)
+#define IS_PIN_SERVO(p)         (IS_PIN_DIGITAL(p) && (p) < MAX_SERVOS) // deprecated since v2.4
+#define IS_PIN_I2C(p)           ((p) == 20 || (p) == 21) // SDA = 20, SCL = 21
+#define IS_PIN_SPI(p)           ((p) == SS || (p) == MOSI || (p) == MISO || (p) == SCK) // SS = A2
+#define IS_PIN_SERIAL(p)        ((p) == 0 || (p) == 1)
+#define PIN_TO_DIGITAL(p)       (p)
+#define PIN_TO_ANALOG(p)        ((p) - 14)
+#define PIN_TO_PWM(p)           PIN_TO_DIGITAL(p)
+#define DIGITAL_PIN_TO_PORT(p)   (p/8) 
+#define DIGITAL_PIN_TO_MASK(p)   (1<<(p%8))
+#define HAS_SERIAL_PRINTF // check this     
 
 #else
 #error "Analog pin macros not defined in board.h for this chip"
