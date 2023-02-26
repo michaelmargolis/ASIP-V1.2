@@ -85,6 +85,8 @@ asipServoClass asipServo(id_SERVO_SERVICE, NO_EVENT);
 
 Servo myServos[1];  // create one servo object
 
+#include "tunes.h" // for melody player
+PlayMelody player(tonePin);  // just for some music while connecting to WiFi
 
 // make a list of the created services
 asipService services[] = {
@@ -104,13 +106,19 @@ void setup() {
   Serial.begin(57600);
   // start the services
   // Board defines in mirtoHardware.h
-  asipLCD.begin(LCD_FONT, IS_LCD_FLIPPED); // invert the display? (set in mirtoHardware.h)
+  asipLCD.begin(nbrLcdPins, lcdPins, LCD_FONT, IS_LCD_FLIPPED); // invert the display? (set in mirtoHardware.h)
+  
+#if defined neoPixelPin
+  asipPixels.begin(neoPixelPin, &strip, setColorCallback );
+  asipPixels.setPixelColor(0, 128 << 16); // red while starting up
+#else
+  asipPixels.begin(setColorCallback); // pixel requests will be resolved on LCD
+#endif
   beginAsipComms();
   #if defined HAS_WIFI_ONBOARD
      beginWiFiClient();
      server.begin();
   #endif
-
   motors.begin(2, 6, motorPins, 4, encoderPins);  // two motors,a total of 6 motor pins,4 encoder pins
   bumpSensors.begin(2, 2, bumpPins);
   irLineSensors.begin(3, 4, irReflectancePins);  // 3 sensors plus control pin
@@ -118,7 +126,9 @@ void setup() {
   asipTone.begin(tonePin);
   asipServo.begin(1,servoPins,myServos);  
 #ifdef ledPin
-  asipIO.PinMode(ledPin, OUTPUT_MODE);
+  #ifndef _PICO2040_  // do not use with pico w
+      asipIO.PinMode(ledPin, OUTPUT_MODE);
+  #endif    
 #endif
 #ifdef DISTANCE_I2C_BUS
   asipDistance.begin(1, 2, distancePins, DISTANCE_I2C_BUS, DISTANCE_ADDR);   
@@ -128,18 +138,15 @@ void setup() {
   //asip.sendPortMap();
 
   //showPins();  delay(4000);
-#if defined neoPixelPin
-  asipPixels.begin(neoPixelPin, &strip, setColorCallback );
-  asipPixels.setPixelColor(0, 16 << 8); // dim  green
-#else
-  asipPixels.begin(setColorCallback); // pixel requests will be resolved on LCD
-#endif
+
 #if defined peripheralPinsToReserve
      for(int i=0; i < peripheralPinsToReserve; i++){
         asip.reserve(peripheralPins[i]);
      }
 #endif
   asipIO.begin();       // NEW from  v1.1: core I/O service must follow all other service begin methods
+  delay(5000);
+  asipPixels.setPixelColor(0, 16 << 8); // dim  green
 }
 
 void loop() {
@@ -206,18 +213,18 @@ void beginWiFiClient() {
   unsigned long startTime = millis();
   unsigned long waitTime = 5000;   
   WiFi.begin(ssid, password);
+  player.play(starwars, 108);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    delay(500);
+    player.service(SCORE_END);
     if(millis() - startTime > waitTime) {
       WiFi.end();
-      Serial.println("");
-      delay(500);
+      player.service(SCORE_END);
+      delay(10);
       WiFi.begin(ssid, password);
       waitTime += 10000;
     }
   }
+  while( player.service(SCORE_SECTION) ); // play to end of section
   Serial.println("");
   Serial.print("Mirto is connected to WiFi network ");  Serial.println(WiFi.SSID());
   Serial.print("Assigned IP Address: ");  Serial.println(WiFi.localIP());
