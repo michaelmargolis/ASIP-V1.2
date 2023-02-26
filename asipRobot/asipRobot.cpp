@@ -153,7 +153,7 @@ void robotMotorClass::reportValues(Stream *stream)
            wheel[0].stopMotor();   
    refreshEncoderCache(1);
    if( wheel[1].PID->isPidServiceNeeded())
-       if(!wheel[1].PID->servicePid(-encoder_state[1].delta, rightMotorCallback))
+       if(!wheel[1].PID->servicePid(encoder_state[1].delta, rightMotorCallback))
            wheel[1].stopMotor();
    if(encoderEventsFlag) {
        asipServiceClass::reportValues(stream);        
