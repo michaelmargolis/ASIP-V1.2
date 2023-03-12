@@ -9,13 +9,13 @@ Data for a scan consists of multiple range messages followed by a range terminat
 
   Message format:   
     Range message:
-    range_header: "@Range" 
+    range_header: "@Nr" 
     scan_id, (value must match value in descriptor message) 
     range_sequence, (must be one more than previous msg for this scan)  
     ranges (mm) (comma seperated distances terminated by newline)
 
     Range terminator message:
-    header: "@Rterm",
+    header: "@Nt",
     scan_id,  (value must match previous range msgs 
     angle_min, (rad)
     angle_max, (rad)
