@@ -23,6 +23,8 @@
 
 #include <U8g2lib.h> 
 
+#define dbgPrintf // Serial.printf  // uncomment to enable debug output
+
 class lcdInterface 
 {
   public:  
@@ -62,6 +64,7 @@ class lcdInterface
         displayHeight =  u8g2.getDisplayHeight();
         if(invert)
             u8g2.setFlipMode(1);
+        dbgPrintf("init lcd, width=%d, height=%d\n", displayWidth, displayHeight);
     }
 
     void lcdInterface::setColor16(uint16_t color)
@@ -90,34 +93,35 @@ class lcdInterface
         int fontDescent = u8g2.getFontDescent();
         int maxFontHeight =  u8g2.getMaxCharHeight();
         fontHeight = maxFontHeight;
-        fontWidth = u8g2.getStrWidth("0123456789")/10;
+        fontWidth = u8g2.getStrWidth("1");
         nbrTextLines = (int) (u8g2.getDisplayHeight() / fontHeight) ;
-        charsPerLine = (int)(u8g2.getDisplayWidth() / (fontWidth/10));
+        charsPerLine = (int)(u8g2.getDisplayWidth() / fontWidth);
+        charsPerLine =  min(charsPerLine, MAX_LCD_CHARS_PER_LINE);
         int lineHeight = u8g2.getDisplayHeight()/nbrTextLines;
         
-
-        //Serial.printf("font info %d: ascent=%d, descent=%d, height=%d, max height=%d, width=%d, nbr lines=%d, chars per line=%d\n", fontSize, fontAscent, fontDescent, fontHeight, maxFontHeight, fontWidth, nbrTextLines, charsPerLine); 
+        dbgPrintf("font info %d: ascent=%d, descent=%d, height=%d, max height=%d, width=%d, nbr lines=%d, chars per line=%d\n", fontSize, fontAscent, fontDescent, fontHeight, maxFontHeight, fontWidth, nbrTextLines, charsPerLine); 
         
         for(byte i=0; i < nbrTextLines; i++){
             lcdTxtTop[i]= i * fontHeight; 
             lcdTxtBaseline[i] = lcdTxtTop[i] +  lineHeight + fontDescent; 
+            dbgPrintf("line %d is at Y pos %d\n", i,lcdTxtBaseline[i]);
         }
     }
      
     void lcdInterface::text(const char *txt, int row, int column)
     {   
         strlcpy(&lcdTextBuffer[row][column], txt, charsPerLine-column);
-        // Serial.printf("text: row = %d, column= %d, txt=%s, buff=%s\n", row, column,txt, &lcdTextBuffer[row][column]);    
+        dbgPrintf("text: row = %d, column= %d, txt=%s, buff=%s\n", row, column,txt, &lcdTextBuffer[row][column]);    
         show();
     }
 
     void lcdInterface::show()
-    {     
+    {    
         u8g2.clearBuffer(); // the pixel buffer
         for ( int line = 0; line < nbrTextLines; line++) {   
           u8g2.setCursor(0, lcdTxtBaseline[line]);
           u8g2.print(&lcdTextBuffer[line][0]);
-           // Serial.printf("show: line = %d, y = %d, %s\n", line, lcdTxtBaseline[line], &lcdTextBuffer[line][0]);    
+          dbgPrintf("show: line %d: y pos=%d, text=%s\n", line, lcdTxtBaseline[line], &lcdTextBuffer[line][0]);    
         }    
         u8g2.sendBuffer();         // transfer internal memory to the display
     }
@@ -127,6 +131,7 @@ class lcdInterface
         memset(lcdTextBuffer, 0, sizeof(lcdTextBuffer)); // clear the text buffer
         u8g2.clearBuffer(); // the pixel buffer
         u8g2.sendBuffer();
+        dbgPrintf("clear");
     }
 
     void lcdInterface::clearLine(int line)
@@ -136,7 +141,7 @@ class lcdInterface
         u8g2.setDrawColor(1);
         u8g2.sendBuffer();
         memset(&lcdTextBuffer[line], 0, MAX_LCD_CHARS_PER_LINE);
-        // Serial.printf("clearLine: x=%d, y=%d, x1=%d, y1=%d\n",0, lcdTxtTop[line], width-1, fontHeight ); 
+        dbgPrintf("clearLine: x=%d, y=%d, x1=%d, y1=%d\n",0, lcdTxtTop[line], displayWidth-1, fontHeight ); 
     }
 
     void lcdInterface::hGraph(int line, int value)
