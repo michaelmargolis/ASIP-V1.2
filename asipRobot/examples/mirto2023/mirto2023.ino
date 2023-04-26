@@ -1,6 +1,11 @@
 /*
-   ASIP Robot sketch for mirto 2023 board
+   ASIP Robot sketch supporting teensy boards and the mirto 2023 Pico board
 
+   This code is intended to support Mirto robots that use a Raspberry pi for WiFi connectivity
+   and application control using ASIP
+   
+   Note that auto USB connection requires a Pico (not Pico W), Pi connectivity does not work with PicoW
+   
     This sketch depends on the following libraries in addition to core ASIP:
      (libraries preceeded with * are third party, install using library manager)
       asipRobot
@@ -167,7 +172,7 @@ void selectComsMode() {
   Serial1.setRX(piPins[0]);
   Serial1.setTX(piPins[1]);
   Serial1.begin(ASIP_BAUD);
-  if ( !rp2040.isPicoW()) {
+  if ( !rp2040.isPicoW()) { 
     // autodetect USB connection if not Pico W
     pinMode(USB_DETECT_PIN, INPUT);
     if (!digitalRead(USB_DETECT_PIN)) {
