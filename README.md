@@ -1,4 +1,4 @@
-# Asip 1.2.0#
+# Asip 1.2.0
 ASIP (Arduino Service Interface Protocol) is a protocol to control an Arduino board from a computer. The protocol is intended to be a more extensible replacement for Firmata.
 
 ### What is this repository for? ###
