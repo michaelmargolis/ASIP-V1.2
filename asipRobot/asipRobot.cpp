@@ -237,42 +237,35 @@ void robotMotorClass::stopMotors()
    
 void robotMotorClass::resetEncoderTotals()
 {
-    Serial.println("resetting encoder counts");
+    debug_printf("resetting encoder counts\n");
     encoderLeftWheel.write(0);
     encoderRightWheel.write(0);
     encoder_state[0].prevPos = encoder_state[1].prevPos = 0;
 }
    
-void robotMotorClass::processRequestMsg(Stream *stream)
+void robotMotorClass::processRequestMsg(Stream *s)
 {
-   int arg0 =-1, arg1 = -1, arg2=-1; 
-   int request = stream->read();       
-   // parse the correct number of arguments for each method 
-   arg0 = stream->parseInt();  
+   int request = s->read();    
+
    if(request == tag_AUTOEVENT_REQUEST) {
        // unlike other services, motor autoevents is always on, this request enables or disable the sending of encoder data
-        encoderEventsFlag = (arg0 != 0);  
+        encoderEventsFlag = (s->parseInt()!= 0);  
    }
    else{ 
-       if( !(request == tag_STOP_MOTORS || request == tag_RESET_ENCODERS) ) { // these have no args                 
-          arg1 = stream->parseInt();  
-          if( request == tag_SET_MOTOR_RPM || request == tag_SET_MOTORS_RPM ) {
-            arg2 = stream->parseInt();  
-          }
-       }           
-       switch(request) {
-          case tag_SET_MOTOR:  setMotorPower(arg0,arg1);  break;
-          case tag_SET_MOTORS: setMotorPowers(arg0,arg1);break; // TODO this assumes only two motors
+      // invoke request with correct number of args
+       switch(request) { 
+          case tag_SET_MOTOR:  setMotorPower(s->parseInt(), s->parseInt());  break;
+          case tag_SET_MOTORS: setMotorPowers(s->parseInt(), s->parseInt());break; // TODO this assumes only two motors
 #ifdef ASIP_PID           
-          case tag_SET_MOTOR_RPM:  setMotorRPM(arg0,arg1,arg2); break;
-          case tag_SET_MOTORS_RPM: setMotorsRPM(arg0,arg1,arg2); break;   
-          case tag_SET_ROBOT_SPEED_CM : setRobotSpeedCmPerSec(arg0,arg1); break; 
-          case tag_ROTATE_ROBOT_ANGLE: rotateRobot(arg0, arg1); break ;
+          case tag_SET_MOTOR_RPM:  setMotorRPM(s->parseInt(), s->parseInt(), s->parseInt()); break;
+          case tag_SET_MOTORS_RPM: setMotorsRPM(s->parseInt(), s->parseInt(), s->parseInt()); break;   
+          case tag_SET_ROBOT_SPEED_CM : setRobotSpeedCmPerSec(s->parseInt(), s->parseInt()); break; 
+          case tag_ROTATE_ROBOT_ANGLE: rotateRobot(s->parseInt(), s->parseInt());  break ;
 #endif          
-          case tag_STOP_MOTOR:  stopMotor(arg0); break;
+          case tag_STOP_MOTOR:  stopMotor(s->parseInt()); break;
           case tag_STOP_MOTORS: stopMotors(); break; 
           case tag_RESET_ENCODERS: resetEncoderTotals(); break;
-          default: reportError(ServiceId, request, ERR_UNKNOWN_REQUEST, stream);
+          default: reportError(ServiceId, request, ERR_UNKNOWN_REQUEST, s);
        }       
    }
 }
@@ -351,19 +344,25 @@ void irLineSensorClass::reset()
 
 }
 
-void irLineSensorClass::reportValue(int sequenceId, Stream * stream)  // send the value of the given device
+int16_t irLineSensorClass::getValue(int sequenceId)
 {
-   if( sequenceId < nbrElements) {
+    if( sequenceId < nbrElements) {
       int pin = pins[sequenceId+1]; // the first pin is the control pin
       #if defined(TARGET_RP2040) || defined(TARGET_RASPBERRY_PI_PICO)
       #else
         pin = PIN_TO_ANALOG(pin); // convert digital number to analog
       #endif
-      int value = analogRead(pin) -24;  // ensure max value <= 1000
+      int16_t value = analogRead(pin) -24;  // ensure max value <= 1000
       if(value < 0)
           value = 0;
-      stream->print(value);
+      return value;
     }
+    return 0;
+}
+
+void irLineSensorClass::reportValue(int sequenceId, Stream * stream)  // send the value of the given device
+{
+   stream->print(getValue(sequenceId));
 }
 
 void irLineSensorClass::processRequestMsg(Stream *stream)

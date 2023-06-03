@@ -115,7 +115,9 @@ int asipDistanceClass::getDistance(int sequenceId)
     }
     else{
         return readPulsedSensor(sequenceId);
-    }  
+    } 
+    else
+        return 0;
 }
 
 int asipDistanceClass::readPulsedSensor(int sequenceId)

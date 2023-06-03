@@ -91,9 +91,9 @@ inline int RobotMotor::powerToPWM(int power)
 void RobotMotor::stopMotor()
 {
   //stop the motor using the current braking mode 
+  setMotorPwm(0);
   PID->stopPid();
   currentPwm = 0;
-  setMotorPwm(0);
   debug_printf("%s stopMotor\n", label);
 }
 

@@ -1,5 +1,5 @@
 /*
-   ASIP Robot sketch for mirto 2016 and 2018 boards
+   ASIP Robot sketch for mirto boards
 
     This sketch depends on the following libraries in addition to core ASIP:
      (libraries preceeded with * are third party, install using library manager)

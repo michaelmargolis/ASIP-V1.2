@@ -125,6 +125,7 @@ public:
    irLineSensorClass(const char svcId);
    void begin(byte nbrElements, byte pinCount, const pinArray_t pins[]);
    void reset();
+   int16_t getValue(int sequenceId);
    void reportValues(Stream *stream);
    void reportValue(int sequenceId, Stream * stream) ; // send the value of the given device
    void processRequestMsg(Stream *stream);

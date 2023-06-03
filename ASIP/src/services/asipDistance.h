@@ -43,9 +43,10 @@ public:
    void reportValue(int sequenceId, Stream * stream) ; // send the value of the given device
    void processRequestMsg(Stream *stream);
    void remapPins(Stream *stream);
+   int getDistance(int sequenceId);
    //void reportName(Stream *stream);
 private:
-   int getDistance(int sequenceId);
+
    int readPulsedSensor(int sequenceId);
    int readI2CSensor(int sequenceId);
    boolean SeperateTrigEchoPins;   
