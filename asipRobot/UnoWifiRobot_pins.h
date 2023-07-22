@@ -1,15 +1,15 @@
 /*
- * Pin allocations for mirto using Uno WIfi Rev2 shield
+ * Pin allocations for mirto using Uno WIfi R2 or R4 shield
  * The order of the following pins is service specific, see the service definition for details
  */
 #ifndef robot_pins_h
 #define robot_pins_h
 
-#if defined (UNO_WIFI_REV2_328MODE)
+#if defined (UNO_WIFI_REV2_328MODE) || defined(ARDUINO_UNOWIFIR4)
     // pin defines for DRV8833 boards ('255' elements will be set PWM pin based on motor direction)
     const byte motorPins[]   = {6,9,255, 10,5,255};  // L-in1,L-in2, pwm,  R-in1,R-in2, pwm
     const byte _tonePin = 13;
-    const byte encoderPins[] = {7,2,3,4}; // Left:A,B  Right:A,B
+    const pinArray_t encoderPins[] = {7,2,3,4}; // Left:A,B  Right:A,B
     const byte bumpPins[] = {12,11};
     const byte switchPin     = 11;   // switch connected to right bump pin
     const byte irReflectancePins[] = {8,A2,A3,A1}; // first is control, the remainder are used as analog inputs

@@ -416,6 +416,38 @@
   #define CORE_INT27_PIN	27
   #define CORE_INT28_PIN	28
   #define CORE_INT29_PIN	29
+// Arduino Uno R4
+#elif defined(ARDUINO_UNOR4_MINIMA)
+//0, 1, 2, 3, 8, 12, 13, 15, 16, 17, 18 and 19.
+  #define CORE_NUM_INTERRUPT	20
+  #define CORE_INT0_PIN		0
+  #define CORE_INT1_PIN		1
+  #define CORE_INT2_PIN		2
+  #define CORE_INT3_PIN		3
+  #define CORE_INT8_PIN		8
+  #define CORE_INT12_PIN	12
+  #define CORE_INT13_PIN	13
+  #define CORE_INT15_PIN	15
+  #define CORE_INT16_PIN	16
+  #define CORE_INT17_PIN	17
+  #define CORE_INT18_PIN	18
+  #define CORE_INT19_PIN	19
+  
+#elif defined(ARDUINO_UNOR4_WIFI)
+//0, 1, 2, 3, 8, 11, 12, 15, 16, 17, 18 and 19.
+  #define CORE_NUM_INTERRUPT	20
+  #define CORE_INT0_PIN		0
+  #define CORE_INT1_PIN		1
+  #define CORE_INT2_PIN		2
+  #define CORE_INT3_PIN		3
+  #define CORE_INT8_PIN		8
+  #define CORE_INT11_PIN	11
+  #define CORE_INT12_PIN	12
+  #define CORE_INT15_PIN	15
+  #define CORE_INT16_PIN	16
+  #define CORE_INT17_PIN	17
+  #define CORE_INT18_PIN	18
+  #define CORE_INT19_PIN	19
 #endif
 #endif
 

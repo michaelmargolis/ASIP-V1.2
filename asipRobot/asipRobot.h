@@ -19,7 +19,7 @@
 #include "RobotMotor.h"  // for H-bridge enums
 
 #ifdef NOT_MOVED_TO_SKETCH  // include the appropriate one if not defined in sketch folder
-#if defined (UNO_WIFI_REV2_328MODE) || defined (ARDUINO_SAMD_ZERO) // zero uses same pins as uno
+#if defined (UNO_WIFI_REV2_328MODE) || defined (ARDUINO_SAMD_ZERO) || defined(ARDUINO_UNOWIFIR4) // all use same shield
   #include "UnoWifiRobot_pins.h"  
 #elif defined(__MK20DX256__) // Teensy 3.x
   #include "mirto2020Pins.h"
