@@ -1,0 +1,5 @@
+#define SECRET_SSID "scratch_robots"
+#define SECRET_PASS "outreach"
+//#define SECRET_SSID "mirto_robots"
+//#define SECRET_PASS "outreach"
+//#define SECRET_SSID "mem4"

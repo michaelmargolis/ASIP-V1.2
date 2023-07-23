@@ -497,7 +497,7 @@ void asipServiceClass::begin(byte _nbrElements, serviceBeginCallback_t serviceBe
 // can be invoked by clients to restore conditions to start-up state
  void asipServiceClass::reset()
  {
- 
+   debug_printf("Reset is not implimented in this version\n"); // debug output 
  }
  
 asipServiceClass::~asipServiceClass(){} 
