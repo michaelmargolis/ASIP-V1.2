@@ -71,10 +71,10 @@ void StreamToWebsocket::defaultEvtHandler(bool isConnected) {
 }
 
 IPAddress StreamToWebsocket::remoteIP(){
-  #if !defined(ARDUINO_UNOWIFIR4) 
-   return webSocket.remoteIP(gClientId);
+  #if defined(ARDUINO_UNOWIFIR4) || defined (UNO_WIFI_REV2_328MODE)
+   return  IPAddress(0,0,0,0); // Todo: remote Ip not supported in current websocket lib 
   #else
-    return " "; // Todo: remote Ip not supported in current websocket lib 
+   return webSocket.remoteIP(gClientId);
   #endif  
 }
 
