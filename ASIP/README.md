@@ -1,25 +1,28 @@
-# Asip #
+# Asip 1.2.0#
 ASIP (Arduino Service Interface Protocol) is a protocol to control an Arduino board from a computer. The protocol is intended to be a more extensible replacement for Firmata.
 
 ### What is this repository for? ###
 
-*This repository includes the code for the core Asip functionalities: setting pin modes, reading and writing digital and analog pins.
-*Version: 1.2.0
+This repository includes the code for core Asip functionality and the following additional services:
+* asipRobot - motor and other Mirto hardware specific libraries  
+* asipPixel - Neopixel support
+* asipLCD - Support for monochrome and TFT lCDs
+* asipIMU - Support for  MPU6050 (gyro and accelerometer), HMC5883L (magnetometer), BMP085 (altimeter)
 
 
-### Quick installation instructions ###
 
-* Open the Arduino IDE (please use version 1.6.8 or above).
-* Select Sketch -> Include Library -> Manage Libraries...
-* Search for and install asip
-* Click on File -> Examples -> asip -> AsipIO
-* Connect a board, select the appropriate board and port from the Tools menu and upload the AsipIO sketch.
-* You are now ready to go. You can either send messages directly through the serial port (remember to set the baud rate to 57600) or you can download a client for a programming language such as Java, Python and Racket. 
-* The examples folder contains sketches showing how to use the sensors and actuators supported by ASIP.
-* The documents folder contains details of protocol for the supported services 
+### Changes in this release ###
+* Added support for a wider range of boards, including ESP32 AND Pico2040 boards. Note that boards without EEPROM such as the Pico do not save changes to PID parameters.
+* Added support for wider range of LCD hardware, including color displays
+* Enhanced ASIP pixels to enable setting of background color on LCD displays
+* Added Serial msg to change SSID and Password on Wifi boards
+* Changes are backwards compatible – all ASIP 1.1 clients should work as is with V1.2
 
 
-### Additional help ###
-
-* Don't be afraid of contacting us. We'll try to reply as soon as possible. Feel free to open issues.
-* Do you want to contribute? Please get in touch :-)! We need help for a number of things, starting from documentation to the development of other clients, additional services, examples, etc.
+### Installation ###
+Copy the following folders from this repository to your Arduino libraries directory:
+* ASIP
+* asipPixels - needs Adafruit_NeoPixel library
+* asipLCD - needs U8g2 and/or TFT-eSPI libraries depending on sketch
+* asipRobot - Needs modification to some third party libraries, see readme file in 'Modified arduino libraries' folder
+* asipHeading and/or asipIMU if you need IMU support

@@ -19,7 +19,8 @@
 /* macros providing pin information */
 
 // TODO see if this can be gleaned from the distributed pins_arduino.h
-#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
+// mem removed ATmega168 May 2023
+#if defined(__AVR_ATmega328P__) || defined(ARDUINO_SANTIAGO)
 #define TOTAL_PINCOUNT           20 
 #define TOTAL_ANALOG_PINS       6
 #define IS_PIN_DIGITAL(p)       ((p) >= 0 && (p) < TOTAL_PINCOUNT)
@@ -180,7 +181,7 @@
 #define SERIAL_TX_PIN           1
 
 // Uno WiFi Rev 2 using ATmega4809
-#elif defined(UNO_WIFI_REV2_328MODE)
+#elif defined(UNO_WIFI_REV2_328MODE) || defined(ARDUINO_UNOWIFIR4)
 #define TOTAL_PINCOUNT          20 
 #define TOTAL_ANALOG_PINS       5
 #define IS_PIN_DIGITAL(p)       ((p) >= 0 && (p) < TOTAL_PINCOUNT)
@@ -280,7 +281,7 @@
 #define HAS_SERIAL_PRINTF // check this     
 
 #else
-#error "Analog pin macros not defined in board.h for this chip"
+#error "Pin macros not defined in board.h for this chip"
 #endif
 
 #if not defined (IS_PIN_DIGITAL)
@@ -331,6 +332,8 @@
 #define CHIP_NAME "Pi Pico 2040"
 #elif defined(ARDUINO_ARCH_ESP32)
 #define CHIP_NAME "ESP32"
+#elif defined (ARDUINO_UNOWIFIR4)
+#define CHIP_NAME "Renesas R7"
 #else
 #define CHIP_NAME "Unrecognized chip"
 #endif

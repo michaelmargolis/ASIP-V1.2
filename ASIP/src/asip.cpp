@@ -67,6 +67,11 @@ void asipClass::service()
         else if(tag == INFO_MSG_HEADER) {
            processDebugMsg();
         }        
+        else if (tag == CONFIG_MSG_HEADER){
+           if(configCallback) {
+               configCallback();           
+           }
+        }            
         else {
           int svc = 0; 
           while(svc < nbrServices) {
@@ -103,6 +108,11 @@ void asipClass::service()
       }      
     }    
   }  
+}
+
+void asipClass::setConfigCallback(configCallback_t callback) 
+{
+   configCallback = callback;
 }
 
 void asipClass::processDebugMsg()

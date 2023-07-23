@@ -58,10 +58,13 @@ struct pinRegistration_t  {
      byte service : 5;
   };   
    
+typedef void (*configCallback_t)(void);   // callback for configuration messages (currently only WiFI)
+   
 const char SYSTEM_SERVICE_ID     = '@'; // only used when de-registering pins at reset    
 //System messages
 // Request messages to Arduino
 const char SYSTEM_MSG_HEADER       = '#';  // system requests are preceded with this tag
+const char CONFIG_MSG_HEADER       = '$';  // Config requests, currently only changed WiFI SSID and PW 
 const char tag_SYSTEM_GET_INFO     = '?';  // Get version and hardware info
 const char tag_SERVICES_NAMES      = 'N';  // get list of friendly service names 
 const char tag_PIN_SERVICES_LIST   = 'S';  // gets a list of pins indicating registered service 
@@ -104,6 +107,8 @@ public:
   void sendAnalogPinMap();
   void sendPinModes(); 
   void sendErrorMessage( const char svc, const char tag, enum asipErr_t err, Stream *stream); 
+  void setConfigCallback(configCallback_t callback);
+  
 private:
   friend class asipIOClass; 
   // low level interface 
@@ -127,6 +132,7 @@ private:
   void processDebugMsg();
   bool isValidServiceId(char serviceId);
   asipServiceClass* serviceFromId( char tag);
+  configCallback_t configCallback;
 
  };
  
