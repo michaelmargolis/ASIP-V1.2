@@ -203,4 +203,7 @@ void RobotMotor::setMotorRPM(int RPM, uint32_t duration)
       debug_printf("%s %s, ticksPerSecond set to %d, dur=%d\n",
                    label, RPM >= 0 ? "forward":"reversed",targetTicksPerSecond, duration );
   }       
+  else {
+    stopMotor();
+  }      
 }
